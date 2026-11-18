@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en" data-tone="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stuti Singh · AI & Data Engineer</title>
+  <meta name="description" content="Stuti Singh is an AI and data engineer in Bengaluru. Walk through the data refinery she builds: intake, ETL, confidence scoring, human review, redaction and checkpoints.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#intake">Skip to the work</a>
+<canvas id="world" aria-hidden="true"></canvas>
+<div class="scrim" aria-hidden="true"></div>
+
+<div class="frame" aria-hidden="true">
+  <span class="frame__v"></span><span class="frame__h"></span><span class="cross"></span>
+  <div class="frame__label mono"><span id="ch-idx">01</span><i></i><span id="ch-name">The refinery</span></div>
+  <div class="frame__prog"><span id="progress"></span></div>
+</div>
+
+<header class="nav">
+  <a class="nav__name" href="#top">Stuti Singh<span class="mono">AI &amp; data engineer</span></a>
+  <nav aria-label="Sections">
+    <a href="#intake">The line</a>
+    <a href="#tower">Principles</a>
+    <a href="#experience">Experience</a>
+    <a class="pill mono" href="#contact">Get in touch <span aria-hidden="true">↗</span></a>
+  </nav>
+</header>
+
+<!--
+  Each [data-station] section is a stop on the line. world.js flies the camera to that
+  station as the section scrolls in (keys into KEYS in world.js). Station panels are pinned
+  while the section scrolls; interactive demos open in the <dialog> sheets at the end.
+-->
+<main id="top">
+
+  <section class="ch ch--hero" data-station="hero" data-tone="light" data-label="The refinery">
+    <div class="wrap hero">
+      <p class="micro mono">Bengaluru · AI engineer · Data engineer</p>
+      <h1 class="hero__name">Stuti Singh</h1>
+      <p class="hero__sub">I build the refinery that turns <em>fragmented</em> data into something people can trust.</p>
+      <p class="now mono"><span class="dot"></span>Now: Founding Member &amp; Engineer at Arkandis Labs · Research Associate at IIM Bangalore</p>
+      <p class="hint mono">Scroll to walk the line <span aria-hidden="true">↓</span></p>
+    </div>
+  </section>
+
+  <!-- 01 INTAKE · LH2 -->
+  <section class="ch station" id="intake" data-station="intake" data-tone="light" data-label="Intake">
+    <div class="pin"><div class="wrap"><article class="panel">
+      <p class="panel__kicker"><span class="num mono">01</span><span class="mono">Intake</span></p>
+      <p class="panel__org mono">LH2 Holdings · Corporate Development Analyst (Founder’s Office) · Dec 2025 – Jul 2026</p>
+      <h2 class="panel__title">A media intelligence CRM, <em>built solo</em>.</h2>
+      <div class="metric">
+        <b>95–97%</b>
+        <span>syndication tracking accuracy, where ChatGPT and Claude alternatives managed ~40%</span>
+      </div>
+      <div class="vs" id="acc-bars" aria-hidden="true">
+        <span class="vs__row"><i class="vs__fill vs__fill--me" data-w="96"></i></span>
+        <span class="vs__row"><i class="vs__fill" data-w="40"></i></span>
+      </div>
+      <p class="panel__body">I shipped it independently, from architecture to production. It maps the right SPOCs at each media house, tracks their influence and online presence, writes personalised partnership emails, and alerts the team to replies across hundreds of contacts.</p>
+      <ul class="chips mono"><li>Python</li><li>Scrapy</li><li>Playwright</li><li>PostgreSQL</li><li>LLM classification</li></ul>
+    </article></div></div>
+  </section>
+
+  <!-- 02 ETL · WISSEN -->
+  <section class="ch station" id="st-sort" data-station="sort" data-tone="light" data-label="ETL &amp; dedupe">
+    <div class="pin"><div class="wrap"><article class="panel">
+      <p class="panel__kicker"><span class="num mono">02</span><span class="mono">ETL &amp; dedupe</span></p>
+      <p class="panel__org mono">Wissen Technology · Associate Consultant – Data Analytics (Chief of Staff Office) · Jun 2024 – Oct 2025</p>
+      <h2 class="panel__title">Five years of messy data, <em>made trustworthy</em>.</h2>
+      <div class="metric">
+        <b>90%</b>
+        <span>fewer manual reporting errors once the ETL was automated</span>
+      </div>
+      <p class="panel__body">I validated, deduplicated and standardised 5+ years of BFSI client data, then built the star-schema models and governed Power BI dashboards that HR, Sales, Finance and Talent Acquisition ran on.</p>
+      <ul class="chips mono"><li>Python</li><li>Pandas</li><li>SQL</li><li>Star schema</li><li>Power BI</li></ul>
+    </article></div></div>
+  </section>
+
+  <!-- 03 RULES GATE · CRM -->
+  <section class="ch station" id="st-score" data-station="score" data-tone="light" data-label="Rules gate">
+    <div class="pin"><div class="wrap"><article class="panel">
+      <p class="panel__kicker"><span class="num mono">03</span><span class="mono">Rules gate</span></p>
+      <p class="panel__org mono">LH2 Holdings · Research-Driven CRM &amp; Enrichment</p>
+      <h2 class="panel__title">A CRM where the model <em>never writes silently</em>.</h2>
+      <ul class="legend">
+        <li><i class="sw sw--ok"></i><b>Confident</b><span>applied</span></li>
+        <li><i class="sw sw--rev"></i><b>Uncertain</b><span>sent to a person</span></li>
+        <li><i class="sw sw--unk"></i><b>Missing</b><span>left unknown</span></li>
+      </ul>
+      <p class="panel__body">Below a confidence threshold the AI only proposes. A reviewer decides, every override is logged, and any change can be undone.</p>
+      <ul class="chips mono"><li>FastAPI</li><li>JWT + RBAC</li><li>SQLAlchemy</li><li>PostgreSQL</li></ul>
+      <button class="try" type="button" data-open="sheet-crm">Try the review queue <span aria-hidden="true">→</span></button>
+    </article></div></div>
+  </section>
+
+  <!-- 04 LLM BOOTH · LEADS -->
+  <section class="ch station" id="st-llm" data-station="llm" data-tone="light" data-label="LLM booth">
+    <div class="pin"><div class="wrap"><article class="panel">
+      <p class="panel__kicker"><span class="num mono">04</span><span class="mono">LLM booth</span></p>
+      <p class="panel__org mono">LH2 Holdings · Lead-Qualification Pipeline</p>
+      <h2 class="panel__title">Rules first. The LLM <em>only sees the hard ones</em>.</h2>
+      <div class="metric">
+        <b>~70%</b>
+        <span>lower LLM cost, scoring 10,000 websites in 15–25 minutes</span>
+      </div>
+      <p class="panel__body">Leads are scored against an ICP, 30 sites at a time, with a checkpoint every 100 records. Signals that can’t be found stay unknown instead of being guessed.</p>
+      <ul class="chips mono"><li>asyncio</li><li>aiohttp</li><li>OpenAI API</li><li>Caching</li></ul>
+      <button class="try" type="button" data-open="sheet-leads">See why a lead got its tier <span aria-hidden="true">→</span></button>
+    </article></div></div>
+  </section>
+
+  <!-- 05 REDACTION · ARKANDIS -->
+  <section class="ch station" data-station="redact" data-tone="light" data-label="Redaction press">
+    <div class="pin"><div class="wrap"><article class="panel">
+      <p class="panel__kicker"><span class="num mono">05</span><span class="mono">Redaction press</span></p>
+      <p class="panel__org mono">Arkandis Labs · Founding Member &amp; Engineer (Tech &amp; Operations) · Jul 2026 – Present</p>
+      <h2 class="panel__title">Redacting code <em>without breaking it</em>.</h2>
+      <div class="metric">
+        <b>50M+</b>
+        <span>lines of code across 15+ codebases, checked to still run</span>
+      </div>
+      <p class="panel__body">My tooling strips PII, images and third-party assets from whole repository trees with years of Git history. I also run intake, demand tracking and delivery for this AI training-data business.</p>
+      <ul class="chips mono"><li>Python</li><li>Git</li><li>PII detection</li><li>Cloud connectors</li></ul>
+      <button class="try" type="button" data-open="sheet-pii">Redact some code <span aria-hidden="true">→</span></button>
+    </article></div></div>
+  </section>
+
+  <!-- 06 CHECKPOINTS · INVENTORY -->
+  <section class="ch station" id="st-ck" data-station="checkpoint" data-tone="light" data-label="Checkpoints">
+    <div class="pin"><div class="wrap"><article class="panel">
+      <p class="panel__kicker"><span class="num mono">06</span><span class="mono">Checkpoints</span></p>
+      <p class="panel__org mono">LH2 Holdings · Inventory Segmentor</p>
+      <h2 class="panel__title">Terabytes in. <em>A crash costs minutes</em>.</h2>
+      <div class="metric">
+        <b>1–2 TB</b>
+        <span>of unstructured files inventoried across drives, Gmail and Git</span>
+      </div>
+      <p class="panel__body">Discovery, extraction and classification checkpoint independently. PII is flagged on the way in, and every row ships with its confidence, rationale and evidence.</p>
+      <ul class="chips mono"><li>Python</li><li>Worker pools</li><li>Retry/backoff</li><li>Lineage</li></ul>
+      <button class="try" type="button" data-open="sheet-ck">Crash a run <span aria-hidden="true">→</span></button>
+    </article></div></div>
+  </section>
+
+  <!-- 07 TOWER · PRINCIPLES -->
+  <section class="ch station station--tall" id="tower" data-station="tower" data-tone="light" data-label="The tower">
+    <div class="pin"><div class="wrap"><article class="panel panel--wide">
+      <p class="panel__kicker"><span class="num mono">07</span><span class="mono">The tower</span></p>
+      <h2 class="panel__title">What comes out is something you can <em>build on</em>.</h2>
+      <ol class="rules">
+        <li><b>Unknown beats made up.</b><span>Missing signals are marked unknown, never invented.</span></li>
+        <li><b>Rules first, models second.</b><span>Cheap, predictable rules take the clear cases.</span></li>
+        <li><b>Show the confidence.</b><span>Every record carries its score, reasoning and evidence.</span></li>
+        <li><b>A human signs off.</b><span>Uncertain calls go to a person, and every change can be undone.</span></li>
+        <li><b>Never start over.</b><span>Long jobs checkpoint, so a crash costs minutes.</span></li>
+      </ol>
+    </article></div></div>
+  </section>
+
+  <!-- 08 EXPERIENCE (follows the résumé, in its order) -->
+  <section class="ch exp" id="experience" data-station="aerial" data-tone="dark" data-label="Experience">
+    <div class="wrap">
+      <header class="exp__head">
+        <p class="panel__kicker"><span class="num mono">08</span><span class="mono">Experience</span></p>
+        <h2 class="panel__title">Where all of this <em>was built</em>.</h2>
+        <a class="try" href="Stuti_Singh_AI_Data_Engineer.pdf" target="_blank" rel="noopener">Full résumé (PDF) <span aria-hidden="true">↗</span></a>
+      </header>
+
+      <article class="role">
+        <div class="role__meta"><p class="mono role__when">Jul 2026 – Present</p><h3>Arkandis Labs</h3><p class="role__title">Founding Member &amp; Engineer (Tech &amp; Operations)</p></div>
+        <ul class="role__pts">
+          <li>Own technology and operations for an AI training-data business: landing page, lead scraping and qualification, supplier data intake, preparation and delivery.</li>
+          <li>Built redaction tooling for 15+ codebases (50M+ lines of code, 3–5 years of Git history on average) that removes PII, images and third-party assets and checks the code still runs.</li>
+          <li>Automated collection of codebases, audio metadata and samples from supplier drives, cloud storage and connectors. Ran redaction and data preparation across multiple companies, including CAD files, slide decks and PDFs.</li>
+          <li>Built a demand tracker over LinkedIn, Reddit, X and other public sources to map frontier-lab data needs, and an outreach tracker that scores responses by headcount, revenue trajectory and years in operation.</li>
+          <li class="role__ctx">The company reported more than $400K in revenue over its first four months.</li>
+        </ul>
+      </article>
+
+      <article class="role">
+        <div class="role__meta"><p class="mono role__when">Feb 2026 – Present</p><h3>IIM Bangalore (IIMB)</h3><p class="role__title">Research Associate – Entrepreneurial Leadership &amp; Market Agility Research</p></div>
+        <ul class="role__pts">
+          <li>Empirical research on entrepreneurial leadership and strategic decision-making in competitive environments.</li>
+          <li>Econometric models of R&amp;D versus marketing and advertising investment trade-offs, and quantitative frameworks for market agility and resource allocation under competitive pressure.</li>
+        </ul>
+      </article>
+
+      <article class="role">
+        <div class="role__meta"><p class="mono role__when">Dec 2025 – Jul 2026</p><h3>LH2 Holdings</h3><p class="role__title">Corporate Development Analyst (Founder’s Office)</p></div>
+        <ul class="role__pts">
+          <li>Shipped a media-intelligence CRM independently, from architecture to production. Syndication-presence tracking reported at 95–97% accuracy, against ~40% for ChatGPT/Claude alternatives. <a href="#intake">Station 01</a></li>
+          <li>Scraping across hundreds of publications cut manual research by ~70%. PostgreSQL ETL with incremental sync across 10,000+ records, plus LLM classification with confidence scoring.</li>
+          <li>Research-Driven CRM with a deterministic AI policy layer: the model never silently writes to the CRM. <a href="#st-score">Station 03</a></li>
+          <li>Lead-Qualification Pipeline: 10,000 websites in 15–25 minutes, ~70% lower LLM cost. <a href="#st-llm">Station 04</a></li>
+          <li>Inventory Segmentor: 1–2 TB inventoried for licensable AI training corpora, with checkpointed stages and PII detection. <a href="#st-ck">Station 06</a></li>
+          <li>Analysed media landscapes for acquisition and partnership targets, and researched healthcare, science, engineering and research sectors for AI training-data opportunities.</li>
+        </ul>
+      </article>
+
+      <article class="role">
+        <div class="role__meta"><p class="mono role__when">Jun 2024 – Oct 2025</p><h3>Wissen Technology</h3><p class="role__title">Associate Consultant – Data Analytics (Chief of Staff Office)</p></div>
+        <ul class="role__pts">
+          <li>Consolidated 5+ years of historical data from major BFSI clients into a reliable analytics layer, with validation, deduplication and standardised schemas.</li>
+          <li>Owned analytics across HR, Sales, Finance and Talent Acquisition. Defined executive KPI frameworks and built decision-support dashboards.</li>
+          <li>Production ETL in Python, Pandas and SQL, integrated with Zoho Recruit, cutting manual reporting errors by 90%. <a href="#st-sort">Station 02</a></li>
+          <li>Hiring-demand forecasting, A/B testing of recruitment strategies, star-schema models and Power BI governance across Dev, Staging and Production with RBAC and GDPR compliance, plus automated anomaly alerts.</li>
+        </ul>
+      </article>
+
+      <article class="role">
+        <div class="role__meta"><p class="mono role__when">Sep 2023 – Feb 2024</p><h3>NSRCEL, IIM Bangalore</h3><p class="role__title">Program Intern – Launchpad &amp; Campus Founders Program</p></div>
+        <ul class="role__pts">
+          <li>Analysed 80+ startup applications and ran 20+ founder interviews that became case studies.</li>
+          <li>Compiled a 700+ venture alumni dataset tracking sector distribution, survival and programme performance over seven years. Facilitated workshops on Lean Canvas, Design Thinking and pitch strategy.</li>
+        </ul>
+      </article>
+
+      <div class="exp__foot">
+        <article class="role role--small">
+          <p class="mono role__when">Aug 2021 – May 2024</p><h3>Mount Carmel College, Bengaluru</h3><p class="role__title">B.Sc. Economics &amp; Statistics (Dual Major)</p>
+        </article>
+        <article class="role role--small">
+          <p class="mono role__when">Selected project</p><h3>Automated Newsletter Generator</h3><p class="role__title">Scrapes multi-source news feeds with BeautifulSoup and Requests, then ranks and groups stories with keyword extraction, topic modelling and clustering into a formatted newsletter.</p>
+        </article>
+        <article class="role role--small">
+          <p class="mono role__when">On GitHub</p>
+          <ul class="repos">
+            <li><a href="https://github.com/stutisingh22/leadQautomation" target="_blank" rel="noopener"><span class="mono">leadQautomation</span><span>ICP lead scoring that marks gaps unknown</span></a></li>
+            <li><a href="https://github.com/stutisingh22/inventory_segmentor" target="_blank" rel="noopener"><span class="mono">inventory_segmentor</span><span>A messy corpus, inventoried and segmented</span></a></li>
+            <li><a href="https://github.com/stutisingh22/pii_redactor" target="_blank" rel="noopener"><span class="mono">pii_redactor</span><span>Face-aware masking in a browser workspace</span></a></li>
+            <li><a href="https://github.com/stutisingh22" target="_blank" rel="noopener"><span class="mono">github.com/stutisingh22</span><span>Everything else</span></a></li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 CONTACT -->
+  <section class="ch ch--contact" id="contact" data-station="night" data-tone="dark" data-label="Lights on">
+    <div class="wrap contact">
+      <p class="micro mono">Contact</p>
+      <h2>Have messy data and a <em>decision</em> to make?</h2>
+      <p class="lede">I’m open to AI engineering, data engineering and analytics engineering roles. Email is the fastest way to reach me.</p>
+      <div class="cta">
+        <a class="btn btn--solid btn--big magnetic" href="mailto:stutisingh22@icloud.com">stutisingh22@icloud.com</a>
+        <button class="btn magnetic" type="button" data-copy="stutisingh22@icloud.com">Copy email</button>
+        <a class="btn magnetic" href="Stuti_Singh_AI_Data_Engineer.pdf" target="_blank" rel="noopener">Résumé</a>
+        <a class="btn magnetic" href="https://github.com/stutisingh22" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <footer class="foot mono">
+        <span>Stuti Singh · Bengaluru</span>
+        <span>Demo data is labelled as sample · figures from the <a href="Stuti_Singh_AI_Data_Engineer.pdf">résumé</a></span>
+      </footer>
+    </div>
+  </section>
+</main>
+
+<!-- ============ DEMO SHEETS ============ -->
+<dialog class="sheet" id="sheet-crm" aria-labelledby="sheet-crm-t" data-tone="light">
+  <header class="sheet__head"><p class="mono">03 · Rules gate</p><h3 id="sheet-crm-t">The review queue</h3><button class="sheet__x" type="button" data-close aria-label="Close">×</button></header>
+  <p class="sheet__intro">Drag the threshold. Above it, changes apply automatically. Below it, nothing happens until a person approves. Everything can be undone. <span class="tag mono">Sample data</span></p>
+  <label class="slider">
+    <span>Auto-apply when confidence ≥ <output id="crm-th-out" class="mono">80%</output></span>
+    <input type="range" id="crm-th" min="50" max="99" value="80" step="1">
+  </label>
+  <div class="crm">
+    <div class="crm__col"><h4 class="mono">Applied <span id="crm-n-auto" class="count"></span></h4><ul id="crm-auto" class="crm__list"></ul></div>
+    <div class="crm__col"><h4 class="mono">Needs a human <span id="crm-n-rev" class="count"></span></h4><ul id="crm-review" class="crm__list"></ul></div>
+  </div>
+  <ol id="crm-log" class="crm__log mono" aria-live="polite"></ol>
+</dialog>
+
+<dialog class="sheet" id="sheet-leads" aria-labelledby="sheet-leads-t" data-tone="light">
+  <header class="sheet__head"><p class="mono">04 · LLM booth</p><h3 id="sheet-leads-t">Why this tier?</h3><button class="sheet__x" type="button" data-close aria-label="Close">×</button></header>
+  <p class="sheet__intro">Each lead shows who scored it (rules, the LLM, or a person) and why. <span class="tag mono">Sample data</span> <span class="mono micro-r" id="lead-summary"></span></p>
+  <div class="leads" role="list" id="lead-list"></div>
+  <div class="lead-why" id="lead-why" aria-live="polite"></div>
+</dialog>
+
+<dialog class="sheet" id="sheet-pii" aria-labelledby="sheet-pii-t" data-tone="light">
+  <header class="sheet__head"><p class="mono">05 · Redaction press</p><h3 id="sheet-pii-t">Redact some code</h3><button class="sheet__x" type="button" data-close aria-label="Close">×</button></header>
+  <p class="sheet__intro">Edit the code. The same value always gets the same token, so references stay consistent and the code still parses. <span class="tag mono">Sample data</span> <span class="mono micro-r" id="pii-progress"></span></p>
+  <label class="visually-hidden" for="pii-in">Code to redact</label>
+  <textarea id="pii-in" class="pii-in mono" rows="6" spellcheck="false"># Author: Priya Raman &lt;priya.raman@example.com&gt;
+# Reviewed by Arjun Mehta, +91 98000 12345
+def notify(owner="priya.raman@example.com"):
+    send(owner, cc="arjun@example.com")
+    log("Priya Raman approved the build")</textarea>
+  <pre class="pii-out mono" id="pii-out" aria-live="polite"></pre>
+</dialog>
+
+<dialog class="sheet" id="sheet-ck" aria-labelledby="sheet-ck-t" data-tone="light">
+  <header class="sheet__head"><p class="mono">06 · Checkpoints</p><h3 id="sheet-ck-t">Crash a run</h3><button class="sheet__x" type="button" data-close aria-label="Close">×</button></header>
+  <p class="sheet__intro">Start a run, then crash it partway through. With checkpoints, resuming only redoes the batches since the last save. <span class="tag mono">Simulation</span> <span class="mono micro-r" id="ck-status">idle</span></p>
+  <div class="stages" id="ck-stages"></div>
+  <div class="ck-btns">
+    <button class="btn btn--small btn--solid" id="ck-run" type="button">Run</button>
+    <button class="btn btn--small" id="ck-crash" type="button" disabled>Simulate crash</button>
+    <button class="btn btn--small" id="ck-reset" type="button">Reset</button>
+  </div>
+  <p class="ck-note mono" id="ck-note" aria-live="polite">Start a run, then crash it partway through.</p>
+</dialog>
+
+<script src="vendor/three.min.js"></script>
+<script src="world.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
