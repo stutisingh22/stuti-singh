@@ -363,14 +363,21 @@ def notify(owner="priya.raman@example.com"):
 </dialog>
 
 <script src="vendor/three.min.js"></script>
-<script src="vendor/fx/CopyShader.js"></script>
-<script src="vendor/fx/LuminosityHighPassShader.js"></script>
-<script src="vendor/fx/EffectComposer.js"></script>
-<script src="vendor/fx/RenderPass.js"></script>
-<script src="vendor/fx/ShaderPass.js"></script>
-<script src="vendor/fx/UnrealBloomPass.js"></script>
-<script src="world.js"></script>
 <script src="script.js"></script>
-<script src="game.js"></script>
+<script>
+  /* The museum (museum.js) is the default. ?mode=page is the readable scrolling page over the
+     night city, ?mode=game is the night drive; both of those load world.js + game.js instead. */
+  (function () {
+    var mode = new URLSearchParams(location.search).get('mode');
+    var files = mode === 'page' || mode === 'game'
+      ? ['vendor/fx/CopyShader.js', 'vendor/fx/LuminosityHighPassShader.js', 'vendor/fx/EffectComposer.js', 'vendor/fx/RenderPass.js', 'vendor/fx/ShaderPass.js', 'vendor/fx/UnrealBloomPass.js', 'world.js', 'game.js']
+      : ['museum.js'];
+    files.forEach(function (f) { var el = document.createElement('script'); el.src = f; el.async = false; document.body.appendChild(el); });
+    if (mode === 'page') {
+      var back = document.createElement('a'); back.className = 'mback'; back.href = './'; back.textContent = '← Enter the museum';
+      document.body.appendChild(back);
+    }
+  })();
+</script>
 </body>
 </html>
