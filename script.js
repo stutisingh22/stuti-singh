@@ -29,12 +29,14 @@
       labelName.textContent = c.dataset.label || '';
     }
     // a station's panel shows while its section holds the middle of the screen
-    var any = false;
+    var any = false, onStation = false;
     stations.forEach(function (s) {
       var r = s.getBoundingClientRect(), on = r.top < H * .45 && r.bottom > H * .55;
       s.classList.toggle('on', on); any = any || on;
+      if (on && s.classList.contains('station')) onStation = true;
     });
     html.classList.toggle('scrim-on', any);
+    html.classList.toggle('at-station', onStation);
     var act = null;
     navLinks.forEach(function (n) { if (n.el && n.el.getBoundingClientRect().top + y <= mid) act = n.a; });
     navLinks.forEach(function (n) { n.a.classList.toggle('active', n.a === act); });
@@ -57,6 +59,8 @@
   var stops = [], hold = null, lastY = window.scrollY, lastInput = 0, jumping = 0;
   function measureStops() {
     var y = window.scrollY;
+    // on phones the cards are taller than the screen and scroll in flow, so nothing is held
+    if (window.innerWidth < 960) { stops = []; return; }
     stops = stations.filter(function (s) { return s.classList.contains('station'); })
       .map(function (s) { return Math.round(s.getBoundingClientRect().top + y + H * .25); });
   }
