@@ -351,7 +351,8 @@
 
   /* ---------- first screen ---------- */
   var q = new URLSearchParams(location.search);
-  if (q.get('mode') === 'page' || (stored() === 'page' && q.get('mode') !== 'game') || location.hash.length > 1) { page(); }
+  // recruiters land on the readable page; the game is opt-in (button, or ?mode=game)
+  if (q.get('mode') !== 'game') { page(); }
   else { startEl.hidden = false; html.classList.add('game'); G.active = true; car.visible = true; reset(); camP.set(S.x + 18, 9, S.z + 22); }
   Wd.gameApi = { play: play, page: page, state: S, found: found, stops: STOPS, open: function (i) { openCard(STOPS[i]); } };
 })();
