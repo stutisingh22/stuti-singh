@@ -17,44 +17,132 @@
   /* ---------- painted backgrounds for the blue scenes ---------- */
   $$('[data-bg]').forEach(function (el) { el.style.backgroundImage = 'url(sky/' + el.dataset.bg + '.jpg)'; });
 
-  /* ---------- reveals ---------- */
-  var reveals = $$('.reveal');
-  if ('IntersectionObserver' in window && !reduce) {
-    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -10% 0px', threshold: .05 });
-    reveals.forEach(function (el) { io.observe(el); });
-  } else reveals.forEach(function (el) { el.classList.add('in'); });
-  setTimeout(function () { reveals.forEach(function (el) { if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in'); }); }, 2500);
-
-  /* ---------- scroll: dissolves, rail, parallax ---------- */
+  /* =====================================================================
+     THE STAGE (desktop): one pinned screen, the scroll scrubs a timeline of scenes.
+     Text arrives out of a blur, paintings dissolve through halftone between scenes,
+     a progress line runs along the hairline. Phones and reduced motion get the flow below.
+     ===================================================================== */
+  var STAGE = !reduce && innerWidth >= 960;
   var heroImg = $('.hero__art img'), chartArt = $('.chart__art'), chartImg = chartArt && $('img', chartArt);
-  var dissolveImgs = $$('.record__art img, .signal__art img');
-  var chapters = $$('[data-chapter]'), railLinks = $$('.rail a');
-  var w2 = $('.w2'), ticking = false;
-  function sectionProgress(el) { var r = el.getBoundingClientRect(); return clamp((innerHeight - r.top) / (innerHeight + r.height), 0, 1); }
-  function onScroll() {
-    ticking = false;
-    var H = innerHeight, y = scrollY;
-    if (!reduce) {
-      // the Astronomer dissolves into halftone as you leave him
-      var out = clamp(y / (H * .9), 0, 1);
-      heroImg.style.setProperty('--r', lerp(6, 1.1, out * out).toFixed(2) + 'px');
-      heroImg.style.setProperty('--s', (1.04 + out * .08).toFixed(3));
-      // the star chart resolves out of dots as it arrives, and turns a little
-      if (chartArt) { var p = sectionProgress(chartArt.parentNode); chartImg.style.setProperty('--r', lerp(.5, 6, clamp(p * 2.2, 0, 1)).toFixed(2) + 'px'); chartArt.style.setProperty('--rot', lerp(-9, 3, p).toFixed(2) + 'deg'); }
-      dissolveImgs.forEach(function (img) { var q = sectionProgress(img.closest('section')); img.style.setProperty('--r', lerp(.6, img.closest('.record') ? 3.4 : 6, clamp(q * 2.4, 0, 1)).toFixed(2) + 'px'); });
-      if (w2 && innerWidth > 960) { var r = w2.parentNode.getBoundingClientRect(); w2.style.setProperty('--py', (((r.top + r.height / 2) - H / 2) / H * 80).toFixed(1) + 'px'); }
-    }
-    var cur = null; chapters.forEach(function (s) { if (s.getBoundingClientRect().top < H * .45) cur = s.dataset.chapter; });
-    railLinks.forEach(function (a) { a.classList.toggle('on', a.dataset.ch === cur); });
+  var railLinks = $$('.rail a'), w2 = $('.w2'), ticking = false;
+  var smooth = function (t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+  function sectionProgress(el) {
+    if (STAGE) return el._p || 0;
+    var r = el.getBoundingClientRect(); return clamp((innerHeight - r.top) / (innerHeight + r.height), 0, 1);
   }
-  function req() { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }
-  addEventListener('scroll', req, { passive: true }); addEventListener('resize', req); onScroll();
+  function setR(img, r) { if (img) img.style.setProperty('--r', r.toFixed(2) + 'px'); }
+
+  if (STAGE) {
+    html.classList.add('stage');
+    var spacer = document.createElement('div'); spacer.className = 'stage-spacer'; spacer.setAttribute('aria-hidden', 'true'); document.body.appendChild(spacer);
+    var prog = document.createElement('i'); prog.className = 'fl fl--prog'; $('.frame').appendChild(prog);
+    var DUR = function (el) {   // how long each scene holds, in screens
+      if (el.classList.contains('hero')) return 1.3;
+      if (el.classList.contains('night')) return 2.4;
+      if (el.classList.contains('chart')) return 1.6;
+      if (el.classList.contains('case--paper')) return 1.7;
+      if (el.classList.contains('case')) return 2.1;
+      if (el.classList.contains('signal')) return 1.5;
+      return 1.4;
+    };
+    var foot = $('.foot'), sig = $('.signal'); if (foot && sig) sig.appendChild(foot);
+    var scenes = $$('main > section').map(function (el, i) {
+      // in reading order: the label first, then the headline, then the rest
+      var reveals = el.classList.contains('hero') ? [] : $$('.reveal, .tagpill', el);
+      reveals.forEach(function (r, k) { r._at = Math.min(.36, .02 + k * .04); });
+      return { el: el, i: i, reveals: reveals, base: DUR(el), imgs: $$('[data-dissolve] img, .case__bg', el) };
+    });
+    var H = 0, T = 0, total = 0;
+    var layout = function () {
+      H = innerHeight; T = H * .32; var y = 0;
+      scenes.forEach(function (s) {
+        s.el.style.setProperty('--scrub', '0px');
+        s.over = Math.max(0, s.el.scrollHeight - H);
+        s.dur = Math.max(s.base * H, s.over * 1.15 + 1.2 * H);
+        s.start = y; y += s.dur;
+      });
+      total = y; spacer.style.height = (total + H * .2) + 'px';
+      frame();
+    };
+    var frame = function () {
+      ticking = false;
+      var y = scrollY, cur = null;
+      scenes.forEach(function (s, idx) {
+        var local = y - s.start;
+        var inP = idx === 0 ? 1 : clamp(local / T, 0, 1);
+        var outP = idx === scenes.length - 1 ? 0 : clamp((local - (s.dur - T)) / T, 0, 1);
+        var vis = smooth(inP) * (1 - smooth(outP));
+        var p = clamp((local - T * .5) / (s.dur - T), 0, 1);
+        s.el._p = p; s.el._vis = vis;
+        var st = s.el.style;
+        st.setProperty('--vis', vis.toFixed(3)); st.setProperty('--in', smooth(inP).toFixed(3)); st.setProperty('--out', smooth(outP).toFixed(3));
+        st.visibility = vis > .002 ? 'visible' : 'hidden';
+        s.el.classList.toggle('live', vis > .55);
+        if (s.over) st.setProperty('--scrub', (-s.over * smooth(clamp((p - .08) / .8, 0, 1))).toFixed(1) + 'px');
+        // text arrives line by line, and leaves as one
+        s.reveals.forEach(function (r) { r.classList.toggle('on', p >= r._at && outP < .5); });
+        // paintings: grow out of halftone dots on the way in, dissolve back on the way out
+        s.imgs.forEach(function (img) {
+          var max = img.classList.contains('case__bg') ? 2.6 : img.closest('.record') ? 3.4 : 6;
+          setR(img, idx === 0 ? lerp(max, 1.1, smooth(outP)) : lerp(.35, max, vis));
+        });
+        if (vis > .5) cur = s;
+      });
+      // the hero's own slow push-in
+      var h0 = scenes[0]; heroImg.style.setProperty('--s', (1.04 + h0.el._p * .06).toFixed(3));
+      if (chartArt) chartArt.style.setProperty('--rot', lerp(-9, 3, chartArt.parentNode._p || 0).toFixed(2) + 'deg');
+      if (w2) w2.style.setProperty('--py', lerp(60, -40, w2.closest('section')._p || 0).toFixed(1) + 'px');
+      // the hairline carries this scene's progress; the rail names the chapter
+      prog.style.transform = 'scaleX(' + (cur ? cur.el._p : 0).toFixed(4) + ')';
+      var ch = cur ? cur.el.dataset.chapter : null;
+      railLinks.forEach(function (a) { a.classList.toggle('on', a.dataset.ch === ch); });
+    };
+    var req = function () { if (!ticking) { ticking = true; requestAnimationFrame(frame); } };
+    addEventListener('scroll', req, { passive: true });
+    addEventListener('resize', function () { clearTimeout(layout._t); layout._t = setTimeout(layout, 150); });
+    addEventListener('load', layout);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    layout();
+    // links inside the page go to the scene that holds their target
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest('a[href^="#"]'); if (!a) return;
+      var id = a.getAttribute('href').slice(1), target = id ? document.getElementById(id) : null;
+      var s = scenes.filter(function (x) { return x.el === target || (target && x.el.contains(target)); })[0];
+      if (!id) s = scenes[0];
+      if (!s) return;
+      e.preventDefault(); scrollTo({ top: s.start + (s === scenes[0] ? 0 : T * 1.2), behavior: 'smooth' });
+    });
+  } else {
+    /* ---------- the flow (phones, reduced motion): reveals and gentle scroll effects ---------- */
+    var reveals = $$('.reveal');
+    if ('IntersectionObserver' in window && !reduce) {
+      var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -10% 0px', threshold: .05 });
+      reveals.forEach(function (el) { io.observe(el); });
+    } else reveals.forEach(function (el) { el.classList.add('in'); });
+    setTimeout(function () { reveals.forEach(function (el) { if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in'); }); }, 2500);
+    var dissolveImgs = $$('.record__art img, .signal__art img'), chapters = $$('[data-chapter]');
+    var onScroll = function () {
+      ticking = false;
+      var H = innerHeight, y = scrollY;
+      if (!reduce) {
+        var out = clamp(y / (H * .9), 0, 1);
+        setR(heroImg, lerp(6, 1.1, out * out)); heroImg.style.setProperty('--s', (1.04 + out * .08).toFixed(3));
+        if (chartArt) { var p = sectionProgress(chartArt.parentNode); setR(chartImg, lerp(.5, 6, clamp(p * 2.2, 0, 1))); chartArt.style.setProperty('--rot', lerp(-9, 3, p).toFixed(2) + 'deg'); }
+        dissolveImgs.forEach(function (img) { var q = sectionProgress(img.closest('section')); setR(img, lerp(.6, img.closest('.record') ? 3.4 : 6, clamp(q * 2.4, 0, 1))); });
+      }
+      var cur = null; chapters.forEach(function (s) { if (s.getBoundingClientRect().top < H * .45) cur = s.dataset.chapter; });
+      railLinks.forEach(function (a) { a.classList.toggle('on', a.dataset.ch === cur); });
+    };
+    var req2 = function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } };
+    addEventListener('scroll', req2, { passive: true }); addEventListener('resize', req2); onScroll();
+  }
 
   /* ---------- a canvas that only animates while it is on screen ---------- */
   function liveCanvas(canvas, draw) {
     var ctx = canvas.getContext('2d'), on = false, W = 0, H = 0, dpr = Math.min(devicePixelRatio || 1, 2), raf = 0;
     function size() { var r = canvas.getBoundingClientRect(); W = r.width; H = r.height; canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
-    function loop(t) { if (!on) return; draw(ctx, W, H, t / 1000); raf = requestAnimationFrame(loop); }
+    var host = canvas.closest('section');
+    function loop(t) { if (!on) return; if (!STAGE || (host && host._vis > .01)) draw(ctx, W, H, t / 1000); raf = requestAnimationFrame(loop); }
     size(); addEventListener('resize', function () { size(); if (!on) draw(ctx, W, H, 0); });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { on = es[0].isIntersecting && !reduce; cancelAnimationFrame(raf); if (on) raf = requestAnimationFrame(loop); else draw(ctx, W, H, 0); }).observe(canvas);
     draw(ctx, W, H, 0);
@@ -195,6 +283,8 @@
       $('#pipe-llm').textContent = Math.round(llm * scale).toLocaleString();
     };
     liveCanvas(pipeCanvas, pipeDraw);
+    var pipeHost = pipeCanvas.closest('section'), pipeWas = 0;
+    if (STAGE) addEventListener('scroll', function () { var v = pipeHost._vis || 0; if (v > .6 && pipeWas <= .6) t0 = 0; pipeWas = v; }, { passive: true });
     $('#pipe-run').addEventListener('click', function () { t0 = 0; });
   }
 
