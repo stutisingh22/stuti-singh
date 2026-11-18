@@ -143,7 +143,7 @@
   var STYLES = [windowTex(1, .2, '#1b1d27', '#262d3f'), windowTex(2, .14, '#202129', '#2c3446'), windowTex(3, .26, '#16182a', '#242b44')];
   var wallMats = STYLES.map(function (tx) { return new T.MeshStandardMaterial({ map: tx[0], emissiveMap: tx[1], emissive: 0xffffff, emissiveIntensity: .8, roughness: .55, metalness: .3 }); });
   var roofMat = new T.MeshStandardMaterial({ color: 0x101119, roughness: .9 });
-  var bWalls = [[], [], []], bRoofs = [];
+  var bWalls = [[], [], []], bRoofs = [], solids = [];   // solids: [x, z, halfW, halfD] for the car
   // box with window UVs scaled to real size; walls and roof split so the roof stays plain
   function building(x, z, w, d, h, style, list) {
     var g = new T.BoxGeometry(w, h, d).toNonIndexed(), uv = g.attributes.uv.array, ox = hash(x * 3 + z, 4), oy = hash(x + z * 3, 5);
@@ -159,7 +159,7 @@
     wall.setAttribute('uv', new T.Float32BufferAttribute(pick(uv, 2, 0, 12).concat(pick(uv, 2, 24, 36)), 2));
     roof.setAttribute('position', new T.Float32BufferAttribute(pick(pos, 3, 12, 24), 3));
     roof.setAttribute('normal', new T.Float32BufferAttribute(pick(nor, 3, 12, 24), 3));
-    (list || bWalls[style]).push(wall); bRoofs.push(roof);
+    (list || bWalls[style]).push(wall); bRoofs.push(roof); solids.push([x, z, w / 2, d / 2]);
     return wall;
   }
   var reserved = [], plazas = [];   // landmark footprints [x, z, r]; low-rise zones [side, zNear, zFar]
@@ -208,8 +208,8 @@
     def.at = hitAt; def.box = hitBox; MACH[k] = def; fx[k] = 0; lit[k] = reduce ? 1 : 0;
   }
   // a landmark tower: tinted glass, neon edges, a rooftop name facing up the avenue, a light sweep
-  function landmark(k, side, z, w, d, h, hex, name, def) {
-    var x = side * (RW + 5 + w / 2); reserved.push([x, z, Math.max(w, d) / 2 + 3]); plazas.push([side, z + d / 2 + 60, z + d / 2]);
+  function landmark(k, side, z, w, d, h, hex, name, def, xo) {
+    var x = xo != null ? xo : side * (RW + 5 + w / 2); reserved.push([x, z, Math.max(w, d) / 2 + 3]); if (xo == null) plazas.push([side, z + d / 2 + 60, z + d / 2]);
     var tex = windowTex(11 + Object.keys(MACH).length, .32, '#151726', '#2c3550');
     var mat = new T.MeshStandardMaterial({ map: tex[0], emissiveMap: tex[1], emissive: new T.Color(hex).lerp(new T.Color(0xffffff), .55), emissiveIntensity: .9, roughness: .3, metalness: .5 });
     var list = []; building(x, z, w, d, h, 0, list); scene.add(new T.Mesh(list[0], mat));
@@ -230,7 +230,7 @@
   }
   // a roadside billboard showing one system and its number
   function billboard(k, side, z, hex, tagText, big, small, def) {
-    var x = side * (RW + 4.5), y = 9.5, W2 = 13, H2 = W2 * 576 / 1024; reserved.push([x, z, 5]);
+    var x = side * (RW + 4.5), y = 9.5, W2 = 13, H2 = W2 * 576 / 1024; reserved.push([x, z, 5]); solids.push([x, z, .9, .9]);
     var mat = screenSign(tagText, big, small, hex);
     var scr = new T.Mesh(new T.PlaneGeometry(W2, H2), mat), rot = side > 0 ? -.55 : .55;
     scr.position.set(x, y, z); scr.rotation.y = rot; scene.add(scr);
@@ -256,6 +256,7 @@
   landmark('wissen', 1, -278, 16, 16, 62, W_HEX, 'WISSEN', { title: 'Wissen Technology', sub: 'Associate Consultant – Data Analytics · Jun 2024 – Oct 2025', go: '#wissen' });
   // the KPI tower: its front face is a bar chart that fills in as you scroll
   var kpi = landmark('analytics', -1, -312, 16, 14, 74, W_HEX, 'KPI · FORECASTS', { title: 'KPI tower', sub: 'Wissen · KPI frameworks, forecasts and A/B tests', go: '#tower' });
+  landmark('iimb', -1, -110, 30, 14, 22, '#ffb86b', 'IIM BANGALORE', { title: 'IIM Bangalore', sub: 'Research Associate · Feb 2026 – Present · plus skills & education', go: '#more' }, -74);
   var KC = 8, KR = 26, BARS = [.38, .52, .46, .66, .6, .78, .72, .95];
   var kpiCells = new T.InstancedMesh(new T.BoxGeometry(1.4, 2.2, .3), new T.MeshBasicMaterial({ color: 0xffffff, fog: false }), KC * KR);
   var kpiRowCol = []; for (var kr = 0; kr < KR; kr++) kpiRowCol.push(new T.Color(W_HEX).lerp(new T.Color(L_HEX), kr / KR));
@@ -325,7 +326,7 @@
   paintLamps(1);
 
   /* ---------- traffic: head- and tail-lights that streak when you scroll fast ---------- */
-  var NC = mobile ? 22 : 40, cars = [];
+  var NC = mobile ? 22 : 40, cars = [], trafficXZ = [];
   var carBody = new T.InstancedMesh(merge([new T.BoxGeometry(1.9, .8, 4.3).translate(0, .75, 0), new T.BoxGeometry(1.65, .62, 2.2).translate(0, 1.45, -.2)]), new T.MeshStandardMaterial({ color: 0xffffff, roughness: .25, metalness: .7 }), NC);
   var carLight = new T.InstancedMesh(new T.BoxGeometry(.42, .2, .1), new T.MeshBasicMaterial({ color: 0xffffff, fog: false }), NC * 2);
   var cd = new T.Object3D(), cc = new T.Color(), BODY = [0x1a1d26, 0x0f1015, 0x3a1418, 0x5d6370, 0x1d2b3a, 0x2a2a30];
@@ -340,6 +341,7 @@
     var span = Z0 - Z1, len = .1 * (1 + rush * 30);
     for (var i = 0; i < NC; i++) {
       var c = cars[i], u = (c.off + clock * c.v) % span, z = c.toward ? Z1 + u : Z0 - u;
+      trafficXZ[i] = [c.x, z];
       cd.position.set(c.x, 0, z); cd.rotation.set(0, c.toward ? 0 : Math.PI, 0); cd.scale.set(1, 1, 1); cd.updateMatrix(); carBody.setMatrixAt(i, cd.matrix);
       // both kinds of light sit on the end that faces us (+z); fast scrolling stretches them into trails behind the car
       var trail = c.toward ? -1 : 1, lz = z + 2.17 + trail * (len - .1) / 2;
@@ -368,7 +370,7 @@
   function ring(x, z, size, hex) { var r = rings[ringNext++ % rings.length]; r.m.position.set(x, .08, z); r.m.material.color.set(hex); r.age = 0; r.max = size; r.m.visible = true; }
 
   /* ---------- reacting: arrivals light things up; clicks do more ---------- */
-  var HEX = { arkandis: A_HEX, redaction: A_HEX, lh2: L_HEX, crm: L_HEX, research: L_HEX, leads: L_HEX, inventory: L_HEX, wissen: W_HEX, etl: W_HEX, analytics: W_HEX, end: '#ffd27a' };
+  var HEX = { arkandis: A_HEX, redaction: A_HEX, lh2: L_HEX, crm: L_HEX, research: L_HEX, leads: L_HEX, inventory: L_HEX, wissen: W_HEX, etl: W_HEX, analytics: W_HEX, iimb: '#ffb86b', end: '#ffd27a' };
   var flickT = {}, lightning = 0, kpiReplay = 0;
   function react(k, soft) {
     if (!MACH[k]) return;
@@ -402,7 +404,7 @@
   function hideTag() { tag.classList.remove('show', 'pinned'); tagK = null; tagPinned = 0; }
 
   var ray = new T.Raycaster(), ndc = new T.Vector2(), groundPlane = new T.Plane(new T.Vector3(0, 1, 0), 0), gp = new T.Vector3();
-  function blocked(el) { return !!(el && el.closest && el.closest('a, button, input, textarea, label, dialog, .nav, .panel, .role, .hero > *, .contact > *, .tag3d, .hold')); }
+  function blocked(el) { return !!(el && el.closest && el.closest('a, button, input, textarea, label, dialog, .nav, .panel, .role, .hero > *, .contact > *, .tag3d, .hold, .ghud, .gcard, .gstart, .gprompt, .gjoy, .gplay, .glist')); }
   function pick(e) {
     ndc.set(e.clientX / W * 2 - 1, -(e.clientY / H) * 2 + 1); ray.setFromCamera(ndc, camera);
     var hit = ray.intersectObjects(hitList, false)[0];
@@ -470,10 +472,11 @@
   var cA = new T.Color(), cB = new T.Color(), tmp = new T.Vector3(), tmp2 = new T.Vector3(), ahead = new T.Vector3();
   function mixHex(a, b, t, out) { cA.set(a); cB.set(b); return out.copy(cA).lerp(cB, t); }
 
+  var G = { active: false, update: null, progress: 0 };   // set by game.js
   var last = performance.now(), lastScroll = window.scrollY, vel = 0, roll = 0, arrived = null, booted = false, carClock = 0;
   function frame(now) {
-    var dt = Math.min(.05, (now - last) / 1000); last = now;
-    var time = now / 1000, S0 = state(), A = S0.A, B = S0.B, t = S0.t;
+    var dt = clamp((now - last) / 1000, 0, .05); last = now;   // never negative: rAF time can precede script start
+    var time = now / 1000, S0 = G.active ? { A: KEYS.hero, B: KEYS.night, t: smooth(.12 + G.progress * .88), name: '__game' } : state(), A = S0.A, B = S0.B, t = S0.t;
 
     // scroll speed (screens per second): drives traffic, light trails, rain slant and a slight bank
     var dy = window.scrollY - lastScroll; lastScroll = window.scrollY;
@@ -481,13 +484,14 @@
     var rush = reduce ? 0 : Math.min(5, Math.abs(vel) * 2.5);
     Object.keys(fx).forEach(function (k) { fx[k] = Math.max(0, fx[k] - dt * .7); });
     if (!reduce) carClock += dt * (1 + rush * 1.5);
-    if (t > .97 && S0.name !== arrived) {
+    if (!G.active && t > .97 && S0.name !== arrived) {
       if (booted && ARRIVE[S0.name]) ARRIVE[S0.name].forEach(function (k) { react(k, true); });
       arrived = S0.name;
     }
     booted = true;
 
-    // camera: glide between stops; mid-drive it looks down the road, then turns to the building
+    // camera: in the game the car's chase cam drives it; on the page it glides between stops
+    if (G.active) { G.update(dt, time); camPos.copy(camera.position); } else {
     tmp.set(lerp(A.p[0], B.p[0], t), lerp(A.p[1], B.p[1], t), lerp(A.p[2], B.p[2], t));
     tmp2.set(lerp(A.t[0], B.t[0], t), lerp(A.t[1], B.t[1], t), lerp(A.t[2], B.t[2], t));
     var drive = Math.sin(t * Math.PI) * (Math.abs(A.p[2] - B.p[2]) > 15 && A.p[1] < 20 && B.p[1] < 20 ? .7 : 0);
@@ -500,6 +504,7 @@
     if (!reduce) { roll += (clamp(vel, -3, 3) * -.01 - roll) * .06; camera.rotateZ(roll); }
     var off = lerp(A.off, B.off, t);
     if (mobile) camera.setViewOffset(W, H, 0, H * .14, W, H); else camera.setViewOffset(W, H, -W * off, 0, W, H);
+    }
     sky.position.copy(camera.position); stars.position.copy(camera.position);
     moon.position.set(camera.position.x - 260, camera.position.y + 300, camera.position.z - 1100);
 
@@ -517,7 +522,7 @@
     rainMat.opacity = .2 + flash * .5;
     // our headlights reach down the wet road at street level
     var low = clamp(1 - (camPos.y - 8) / 20, 0, 1);
-    head.intensity = 1.5 * low; head.position.set(camPos.x, camPos.y - 1.5, camPos.z); head.target.position.set(camTgt.x * .4, 0, camPos.z - 40);
+    head.intensity = G.active ? 0 : 1.5 * low; head.position.set(camPos.x, camPos.y - 1.5, camPos.z); head.target.position.set(camTgt.x * .4, 0, camPos.z - 40);
 
     // neon: dark until visited, then it flickers on; clicks pulse it
     signMats.forEach(function (s) {
@@ -585,5 +590,6 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   setInterval(measure, 2000);
   requestAnimationFrame(frame);
-  window.__world = { scene: scene, camera: camera, react: react, lit: lit };
+  window.__world = { T: T, scene: scene, camera: camera, react: react, lit: lit, MACH: MACH, HEX: HEX, solids: solids, traffic: trafficXZ, game: G,
+    RW: RW, Z0: Z0, Z1: Z1, CROSS: CROSS, isMobile: function () { return mobile; } };
 })();
