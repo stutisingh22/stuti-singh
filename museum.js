@@ -499,7 +499,7 @@
   var ui = document.createElement('div');
   ui.innerHTML =
     '<header class="mtop">' +
-      '<a class="mtop__id" href="?" aria-label="Stuti Singh, back to the lobby"><b>Stuti Singh</b><span class="mono">AI Engineer / Data Engineer</span></a>' +
+      '<a class="mtop__id" href="./" aria-label="Stuti Singh, back to the portfolio"><b>Stuti Singh</b><span class="mono">AI Engineer / Data Engineer</span></a>' +
       '<nav class="mtop__nav" aria-label="Museum">' +
         '<button type="button" class="mbtn" data-m="plan">Floor plan</button>' +
         '<a class="mbtn" href="Stuti_Singh_AI_Data_Engineer.pdf" target="_blank" rel="noopener">Résumé (PDF)</a>' +
