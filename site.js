@@ -37,24 +37,24 @@
     var spacer = document.createElement('div'); spacer.className = 'stage-spacer'; spacer.setAttribute('aria-hidden', 'true'); document.body.appendChild(spacer);
     var prog = document.createElement('i'); prog.className = 'fl fl--prog'; $('.frame').appendChild(prog);
     var DUR = function (el) {   // how long each scene holds, in screens
-      if (el.classList.contains('hero')) return 1.0;
-      if (el.classList.contains('night')) return 1.5;
-      if (el.classList.contains('chart')) return 1.15;
-      if (el.classList.contains('case--paper')) return 1.25;
-      if (el.classList.contains('case')) return 1.45;
-      if (el.classList.contains('signal')) return 1.2;
-      return 1.1;
+      if (el.classList.contains('hero')) return 1.5;
+      if (el.classList.contains('night')) return 2.4;
+      if (el.classList.contains('chart')) return 1.9;
+      if (el.classList.contains('case--paper')) return 2.1;
+      if (el.classList.contains('case')) return 2.4;
+      if (el.classList.contains('signal')) return 1.8;
+      return 1.7;
     };
     var foot = $('.foot'), sig = $('.signal'); if (foot && sig) sig.appendChild(foot);
     var scenes = $$('main > section').map(function (el, i) {
       // in reading order: the label first, then the headline, then the rest
       var reveals = el.classList.contains('hero') ? [] : $$('.reveal, .tagpill', el);
-      reveals.forEach(function (r, k) { r._at = Math.min(.2, k * .025); });
+      reveals.forEach(function (r, k) { r._at = Math.min(.2, k * .025); r._head = /^H[1-3]$/.test(r.tagName) || !!r.querySelector('h2, h3'); });
       return { el: el, i: i, reveals: reveals, base: DUR(el), imgs: $$('[data-dissolve] img, .case__bg', el) };
     });
     var H = 0, T = 0, total = 0;
     var layout = function () {
-      H = innerHeight; T = H * .2; var y = 0;
+      H = innerHeight; T = H * .36; var y = 0;
       scenes.forEach(function (s) {
         s.el.style.setProperty('--scrub', '0px');
         s.over = Math.max(0, s.el.scrollHeight - H);
@@ -80,7 +80,12 @@
         s.el.classList.toggle('live', vis > .55);
         if (s.over) st.setProperty('--scrub', (-s.over * clamp((p - .22) / .72, 0, 1)).toFixed(1) + 'px');
         // text arrives line by line, and leaves as one
-        s.reveals.forEach(function (r) { r.classList.toggle('on', inP > .35 && p >= r._at && outP < .6); });
+        if (vis > 0) s.reveals.forEach(function (r, k) {
+          var e = idx === 0 ? 1 : smooth(clamp((local - k * H * .05) / (H * .34), 0, 1)), o = smooth(outP), a = e * (1 - o), rs = r.style;
+          rs.opacity = a.toFixed(3);
+          rs.transform = 'translate3d(0,' + ((1 - e) * 30 - o * 22).toFixed(1) + 'px,0)';
+          if (r._head) { var b = (1 - e) * 10 + o * 8; rs.filter = b > .15 ? 'blur(' + b.toFixed(1) + 'px)' : 'none'; }
+        });
         // paintings: grow out of halftone dots on the way in, dissolve back on the way out
         s.imgs.forEach(function (img) {
           var max = img.classList.contains('case__bg') ? 2.6 : img.closest('.record') ? 3.4 : 6;
@@ -107,14 +112,9 @@
       var d = target - scrollY;
       if (Math.abs(d) < .6) {
         ours = true; scrollTo({ top: target, behavior: 'instant' }); glide = false;
-        // never come to rest in the middle of a scene change: settle into the scene you were heading for
-        for (var q = 1; q < scenes.length; q++) {
-          var b = scenes[q].start;
-          if (Math.abs(target - b) < T * .5) { target = lastDir >= 0 ? b + T * .55 : b - T * .55; glide = true; requestAnimationFrame(step); break; }
-        }
         return;
       }
-      ours = true; scrollTo({ top: scrollY + d * .12, behavior: 'instant' });
+      ours = true; scrollTo({ top: scrollY + d * .09, behavior: 'instant' });
       requestAnimationFrame(step);
     };
     addEventListener('wheel', function (e) {
@@ -130,7 +130,7 @@
       e.preventDefault();
       var dy = e.deltaY * (e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? innerHeight : 1);
       lastDir = dy;
-      target = clamp((glide ? target : scrollY) + dy, 0, maxY());
+      target = clamp((glide ? target : scrollY) + dy * .62, 0, maxY());
       if (!glide) { glide = true; requestAnimationFrame(step); }
     }, { passive: false });
     addEventListener('scroll', function () { if (ours) { ours = false; return; } if (!glide) target = scrollY; }, { passive: true });
@@ -274,7 +274,7 @@
   /* ---------- toy 3: 10,000 sites through the pipeline ---------- */
   var pipeCanvas = $('#pipe');
   if (pipeCanvas) {
-    var PN = innerWidth < 700 ? 4000 : 10000, SHOWN = 10000, P = [], t0 = 0;
+    var PN = innerWidth < 700 ? 2500 : 4000, SHOWN = 10000, P = [], t0 = 0;   // drawn as 4,000 dots, counted as 10,000
     var STAGES = ['fetch', 'extract', 'rules', 'LLM', 'enrich'];
     var TIERS = [['A', '#3fb8a5', .14], ['B', '#7fd1c4', .24], ['C', '#c9bfae', .3], ['Review', '#e7a43a', .14], ['Reject', '#8a8173', .18]];
     var cum = [], acc = 0; TIERS.forEach(function (tt) { acc += tt[2]; cum.push(acc); });

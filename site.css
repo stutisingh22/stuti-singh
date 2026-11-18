@@ -299,7 +299,7 @@ html.stage .stage-spacer { width: 1px; }
 html.stage main > section > :not(.hero__art):not(.chart__art):not(.record__art):not(.signal__art):not(.case__bg):not(canvas):not(.foot) { transform: translateY(var(--scrub, 0px)); }
 /* text leaves the way pear's does: it blurs and drifts */
 html.stage .night__in, html.stage .chart__in, html.stage .case__text, html.stage .record__in, html.stage .instruments__in, html.stage .signal__in,
-html.stage .case > .glass, html.stage .case > .screens, html.stage .case > .bignum { filter: blur(calc(var(--out, 0) * 6px)); opacity: calc(1 - var(--out, 0) * .7); }
+html.stage .case > .glass, html.stage .case > .screens, html.stage .case > .bignum { opacity: calc(1 - var(--out, 0) * .7); }
 html.stage .hero__in, html.stage .hero__band { filter: blur(calc(var(--out, 0) * 14px)); transform: translateX(calc(var(--out, 0) * -60px)); }
 /* and arrives line by line, out of a blur */
 html.stage .reveal, html.stage main > section:not(.hero) .tagpill { opacity: 0; transform: translateY(18px); filter: blur(10px); transition: opacity .9s var(--ease), transform 1.1s var(--ease), filter 1s var(--ease); }
@@ -324,3 +324,13 @@ html.gl .signal .signal__in { grid-column: 2; }
 html.gl .signal .constel { left: 46%; width: 54%; }
 
 html.stage { scroll-behavior: auto; }   /* the glide drives the scroll; CSS smoothing would fight it */
+
+/* scrubbed, not timed */
+html.stage .reveal, html.stage main > section:not(.hero) .tagpill { transition: none !important; will-change: opacity, transform; }
+
+/* over the moving film, a live backdrop blur is re-computed every frame: use a solid tint instead */
+html.gl .glass, html.gl .node, html.gl .tagpill, html.gl .pill--ghost, html.gl .pill--dark { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html.gl .glass { background: rgba(14,16,26,.82); }
+html.gl .case--blue .glass, html.gl #crm .glass { background: rgba(8,28,54,.84); }
+html.gl .node { background: rgba(8,34,66,.6); }
+html.gl .pol__grid i { box-shadow: none; }
