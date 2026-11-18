@@ -441,3 +441,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: 1; pointer-event
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; transition-delay: 0s !important; }
 }
+
+/* no WebGL (e.g. an editor's built-in preview): say so instead of silently dropping the world */
+html.no-gl body::after { content: "The 3D world needs WebGL. Open this page in Chrome, Safari or Firefox to see it."; position: fixed; z-index: 6; left: 50%; bottom: 22px; translate: -50% 0;
+  max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 999px; background: #1f1b17; color: #f6f0e5; font: 500 .74rem var(--body); text-align: center; }
