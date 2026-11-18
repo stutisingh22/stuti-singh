@@ -380,6 +380,26 @@ html.holding .hold b { visibility: hidden; }
   .acts { margin-top: 12px; }
 }
 
+
+/* ---------- 3D world: poke-able machines ---------- */
+html.poke, html.poke body { cursor: pointer; }
+.tag3d { position: fixed; left: 0; top: 0; z-index: 3; pointer-events: none; display: grid; gap: 3px; min-width: 180px; max-width: 260px;
+  padding: 10px 14px 11px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14); background: rgba(24,21,30,.86); color: #f6f0e5;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  opacity: 0; translate: 0 6px; transition: opacity .25s var(--ease), translate .3s var(--ease); }
+.tag3d::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 10px; height: 10px; background: inherit; border: inherit; border-top: 0; border-left: 0; transform: translateX(-50%) rotate(45deg); }
+.tag3d.show { opacity: 1; translate: 0 -10px; }
+.tag3d.pinned { pointer-events: auto; }
+.tag3d b { font: 400 1.15rem/1.1 var(--serif); }
+.tag3d span { font-size: .76rem; line-height: 1.35; color: rgba(246,240,229,.72); }
+.tag3d a { display: none; font: 500 .64rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: #ff8a5c; text-decoration: none; margin-top: 4px; }
+.tag3d.pinned a { display: block; }
+.tag3d a:hover i { margin-left: 4px; }
+
+/* soft cinematic vignette over the world */
+body::before { content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(120% 90% at 60% 45%, rgba(0,0,0,0) 55%, rgba(30,20,10,.16) 100%); }
+
 /* responsive */
 @media (max-width: 960px) {
   :root { --rail: 0px; }

@@ -113,7 +113,10 @@
     }
     lastY = y;
   }, { passive: true });
-  $$('a[href^="#"]').forEach(function (a) { a.addEventListener('click', function () { jumping = performance.now() + 700; hold = null; html.classList.remove('holding'); }); });
+  // in-page links (including the 3D labels, added later) jump straight there, never held
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('a[href^="#"]')) { jumping = performance.now() + 700; hold = null; html.classList.remove('holding'); }
+  }, true);
   window.addEventListener('resize', measureStops);
   window.addEventListener('load', measureStops);
   measureStops();

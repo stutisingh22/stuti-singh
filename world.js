@@ -25,6 +25,17 @@
   scene.fog = new T.Fog(0xf2e6d2, 110, 330);
   scene.background = new T.Color(0xf2e6d2);
 
+  // bloom (vendor/fx, r128 examples). Desktop only; it fades in with the night.
+  var composer = null, bloom = null;
+  if (T.EffectComposer && T.UnrealBloomPass && window.innerWidth >= 960) {
+    try {
+      composer = new T.EffectComposer(renderer);
+      composer.addPass(new T.RenderPass(scene, camera));
+      bloom = new T.UnrealBloomPass(new T.Vector2(512, 512), .2, .6, .9);
+      composer.addPass(bloom);
+    } catch (e) { composer = null; bloom = null; }
+  }
+
   /* ---------- palette ---------- */
   var C = {
     ground: 0xe6dac5, deck: 0xf3ebdd, grid: 0xc9b99d, belt: 0x37312b, rail: 0x221e1a, ink: 0x2a241f,
@@ -90,7 +101,7 @@
   })();
 
   /* ---------- signs ---------- */
-  var signs = [];
+  var signs = [], signBy = {};
   function sign(text, x, y, z, ry, w) {
     var cv = document.createElement('canvas'); cv.width = 1024; cv.height = 192;
     var tex = new T.CanvasTexture(cv); tex.anisotropy = 4;
@@ -120,7 +131,7 @@
   var bowl = new T.Mesh(new T.SphereGeometry(4.2, 28, 12, 0, Math.PI * 2, 0, Math.PI / 3.4), M(C.cream, { side: T.DoubleSide, r: .6 }));
   bowl.position.y = 13.4; bowl.rotation.x = Math.PI * .78; bowl.castShadow = true; dish.add(bowl);
   var beacon = new T.Mesh(new T.SphereGeometry(.35, 12, 8), M(C.accent, { em: C.accent, ei: 1 })); beacon.position.y = 11.4; dish.add(beacon);
-  sign('INTAKE', HX + 3, 14.5, 5, 0, 7);
+  signBy.intake = sign('INTAKE', HX + 3, 14.5, 5, 0, 7);
 
   /* ---------- 02 sorter building ---------- */
   var SX0 = -34.5, SX1 = -25.5;
@@ -136,7 +147,7 @@
   add(new T.CylinderGeometry(.7, .9, 6, 14), M(C.ink), SX1 - 1.5, 10, -2.5);
   var puffs = [];
   for (var pi = 0; pi < 9; pi++) { var pm = M(0xffffff, { op: .8 }); var pf = add(new T.SphereGeometry(.8, 12, 10), pm, SX1 - 1.5, 13, -2.5, { noShadow: true }); puffs.push(pf); }
-  sign('ETL · DEDUPE', (SX0 + SX1) / 2, 10.5, 4.6, 0, 8);
+  signBy.sort = sign('ETL · DEDUPE', (SX0 + SX1) / 2, 10.5, 4.6, 0, 8);
 
   /* ---------- 03 rules gate (scanner arch) ---------- */
   var GX = -8;
@@ -146,25 +157,27 @@
   var scanBar = new T.Mesh(new T.BoxGeometry(.12, .16, 3.4), scanMat); scanBar.position.set(GX, 3, 0); scene.add(scanBar);
   var scanGlow = new T.Mesh(new T.PlaneGeometry(3.4, 4), new T.MeshBasicMaterial({ color: C.teal, transparent: true, opacity: .08, side: T.DoubleSide }));
   scanGlow.position.set(GX, 3.2, 0); scanGlow.rotation.y = Math.PI / 2; scene.add(scanGlow);
-  sign('RULES', GX, 9, -3, 0, 5);
+  signBy.score = sign('RULES', GX, 9, -3, 0, 5);
 
   /* ---------- 04 LLM booth + human review desk ---------- */
   var dome = add(new T.SphereGeometry(3.4, 36, 18, 0, Math.PI * 2, 0, Math.PI / 2), M(C.lilac, { op: .42, r: .2, em: C.lilac, ei: .25 }), 4.5, 0, 9, { noShadow: true });
   add(new T.CylinderGeometry(3.6, 3.8, .3, 36), M(C.ink), 4.5, .15, 9);
   var brainMat = M(0x8f72f0, { em: 0x8f72f0, ei: .9, flat: true, r: .3 });
   var brain = add(new T.IcosahedronGeometry(.9, 0), brainMat, 4.5, 3.4, 9);
-  sign('LLM', 4.5, 8.2, 12.6, 0, 4);
+  signBy.llm = sign('LLM', 4.5, 8.2, 12.6, 0, 4);
   // desk + reviewer
   add(new T.BoxGeometry(3.6, .2, 1.6), M(0xb48a62), 11, 2.3, 13.4);
   [[-1.6, -.6], [1.6, -.6], [-1.6, .6], [1.6, .6]].forEach(function (p) { add(new T.BoxGeometry(.15, 2.2, .15), M(C.rail), 11 + p[0], 1.1, 13.4 + p[1]); });
-  add(new T.CylinderGeometry(.55, .62, 1.9, 16), M(C.terracotta, { r: .7 }), 11, 2.9, 14.9);
-  add(new T.SphereGeometry(.5, 18, 14), M(0xc79a73), 11, 4.2, 14.9);
-  add(new T.SphereGeometry(.52, 18, 14, 0, Math.PI * 2, 0, Math.PI / 2), M(C.ink), 11, 4.3, 14.95);
+  var person = [
+    add(new T.CylinderGeometry(.55, .62, 1.9, 16), M(C.terracotta, { r: .7 }), 11, 2.9, 14.9),
+    add(new T.SphereGeometry(.5, 18, 14), M(0xc79a73), 11, 4.2, 14.9),
+    add(new T.SphereGeometry(.52, 18, 14, 0, Math.PI * 2, 0, Math.PI / 2), M(C.ink), 11, 4.3, 14.95)
+  ].map(function (m) { return [m, m.position.y]; });
   add(new T.BoxGeometry(1.2, 2.2, .2), M(C.rail), 11, 1.8, 16);
   var lampMat = M(0xffe2b0, { em: 0xffc27a, ei: .4 }); nightMats.push([lampMat, 2]);
   add(new T.CylinderGeometry(.06, .06, 1.8, 6), M(C.rail), 12.4, 3.3, 13.8);
   add(new T.ConeGeometry(.45, .55, 16, 1, true), lampMat, 12.4, 4.3, 13.8);
-  sign('REVIEW', 11, 7.6, 17.2, 0, 5);
+  signBy.review = sign('REVIEW', 11, 7.6, 17.2, 0, 5);
 
   /* ---------- 05 redaction press ---------- */
   var PX = 26;
@@ -174,7 +187,7 @@
   add(new T.BoxGeometry(.25, 3, .25), M(0x8c847a, { r: .4 }), PX, 7, 0);
   var okMat = M(C.green, { em: C.green, ei: 1 });
   var okLight = add(new T.SphereGeometry(.45, 16, 12), okMat, PX, 9.4, 0);
-  sign('REDACT · STILL RUNS', PX, 12.6, 3.2, 0, 9);
+  signBy.redact = sign('REDACT · STILL RUNS', PX, 12.6, 3.2, 0, 9);
 
   /* ---------- 06 checkpoints + racks ---------- */
   var flags = [];
@@ -187,7 +200,7 @@
     add(new T.BoxGeometry(5, .2, 2.4), M(C.wall), 41 + rx * 6, 1 + ry * 2.4, -8);
   }
   [38.3, 44.3, 50.3, 56.3, 62.3].forEach(function (x) { [-9.1, -6.9].forEach(function (z) { add(new T.BoxGeometry(.2, 7.6, .2), M(C.rail), x, 3.8, z); }); });
-  sign('CHECKPOINT · RESUME', 50, 10.5, -8, 0, 9);
+  signBy.checkpoint = sign('CHECKPOINT · RESUME', 50, 10.5, -8, 0, 9);
 
   /* ---------- 07 the tower ---------- */
   var TX = 72, TL = 18, TF = 4;
@@ -261,20 +274,30 @@
   var SPEED = 3.2, LEN = X1 - X0;
 
   function hide(mesh, i) { mesh.setMatrixAt(i, ZERO); }
+  var hops = []; // clicks on the ground: nearby blocks hop  [x, z, age]
+  function bumpAt(x, z) {
+    var b = 0;
+    for (var h = 0; h < hops.length; h++) {
+      var d = Math.hypot(x - hops[h][0], z - hops[h][1]), age = hops[h][2];
+      if (d < 9) b += Math.max(0, Math.sin(age * 9 - d * .7)) * Math.exp(-age * 2.2) * (1 - d / 9) * 1.6;
+    }
+    return b;
+  }
   function place(mesh, i, x, y, z, rx, ry, rz, s, sy) {
+    if (hops.length) y += bumpAt(x, z);
     dmy.position.set(x, y, z); dmy.rotation.set(rx || 0, ry || 0, rz || 0); dmy.scale.set(s || 1, (sy || 1) * (s || 1), s || 1); dmy.updateMatrix(); mesh.setMatrixAt(i, dmy.matrix);
   }
   var pressDown = 0;
-  function updateItems(time) {
-    var t = reduce ? 30 : time;
+  function updateItems(time, rainT) {
+    var t = reduce ? 30 : time, tr = reduce ? 30 : rainT;
     for (var i = 0; i < N + K; i++) {
       var o = items[i];
       raw.forEach(function (m) { hide(m, i); });
       if (o.rain) { // raining into the hopper
-        var fall = (t * 6 + o.off * 3) % 18, y = 29 - fall;
+        var fall = (tr * 6 + o.off * 3) % 18, y = 29 - fall;
         if (y > 10.6) {
           var rr = 3.6 * (y - 10) / 18 + .6;
-          place(raw[o.shape], i, HX + Math.cos(o.ry) * rr, y, Math.sin(o.ry) * rr, t * o.spin, o.ry + t, t * o.spin * .7);
+          place(raw[o.shape], i, HX + Math.cos(o.ry) * rr, y, Math.sin(o.ry) * rr, tr * o.spin, o.ry + tr, tr * o.spin * .7);
         }
         continue;
       }
@@ -305,6 +328,111 @@
     hollow.instanceMatrix.needsUpdate = true; band.instanceMatrix.needsUpdate = true;
   }
 
+  /* ---------- atmosphere: dust in the sun, fireflies at night ---------- */
+  var dustTex = (function () {
+    var c = document.createElement('canvas'); c.width = c.height = 64; var g = c.getContext('2d');
+    var r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.35, 'rgba(255,255,255,.55)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new T.CanvasTexture(c);
+  })();
+  var DN = mobile ? 220 : 650, dustPos = new Float32Array(DN * 3), dustSeed = [];
+  for (var di = 0; di < DN; di++) {
+    dustSeed.push([-80 + hash(di, 31) * 190, .6 + hash(di, 32) * 22, -26 + hash(di, 33) * 64, hash(di, 34) * 6.28, .3 + hash(di, 35) * .8]);
+  }
+  var dustGeo = new T.BufferGeometry(); dustGeo.setAttribute('position', new T.BufferAttribute(dustPos, 3));
+  var dustMat = new T.PointsMaterial({ map: dustTex, color: 0xfff2d2, size: .42, transparent: true, opacity: .7, depthWrite: false, blending: T.AdditiveBlending });
+  var dust = new T.Points(dustGeo, dustMat); dust.frustumCulled = false; scene.add(dust);
+
+  /* ---------- shockwave rings (clicks + arrivals) ---------- */
+  var rings = [];
+  for (var ri = 0; ri < 6; ri++) {
+    var rm = new T.Mesh(new T.RingGeometry(.86, 1, 64), new T.MeshBasicMaterial({ color: C.accent, transparent: true, opacity: 0, side: T.DoubleSide, depthWrite: false }));
+    rm.rotation.x = -Math.PI / 2; rm.visible = false; scene.add(rm); rings.push({ m: rm, age: 9, max: 6 });
+  }
+  var ringNext = 0;
+  function ring(x, y, z, size, hex) {
+    var r = rings[ringNext++ % rings.length];
+    r.m.position.set(x, y + .06, z); r.m.material.color.setHex(hex || C.accent); r.age = 0; r.max = size || 6; r.m.visible = true;
+  }
+
+  /* ---------- machines you can poke ----------
+     Each has an invisible hit box, a reaction (fx[name] kicks to 1 and decays), and a label
+     that ties the machine back to the work it stands for. */
+  var MACH = {
+    dish:       { at: [-63, 13, -11],  box: [9, 14, 9],    title: 'Signal dish',      sub: 'Arkandis · demand tracker over LinkedIn, Reddit and X', go: '#arkandis' },
+    intake:     { at: [HX, 7, 0],      box: [11, 14, 11],  title: 'Intake hopper',    sub: 'LH2 · scraping across hundreds of publications', go: '#lh2' },
+    sort:       { at: [-30, 4, 0],     box: [10, 9, 9],    title: 'ETL & dedupe',     sub: 'Wissen · 5+ years of BFSI data, 90% fewer errors', go: '#wissen' },
+    score:      { at: [GX, 3, 0],      box: [2.5, 7, 5.5], title: 'Rules gate',       sub: 'LH2 · a deterministic AI policy layer', go: '#research-crm' },
+    llm:        { at: [4.5, 2, 9],     box: [7.5, 5, 7.5], title: 'LLM booth',        sub: 'LH2 · the model only sees what rules can’t decide', go: '#leads' },
+    review:     { at: [11, 2.5, 14.4], box: [4.5, 5, 4],   title: 'Human review',     sub: 'LH2 · uncertain calls go to a person', go: '#research-crm' },
+    redact:     { at: [PX, 5, 0],      box: [3.5, 10, 6.5], title: 'Redaction press', sub: 'Arkandis · 50M+ lines of code, still running', go: '#redaction' },
+    checkpoint: { at: [50, 3.5, -5],   box: [26, 8, 9],    title: 'Checkpoints',      sub: 'LH2 · Inventory Segmentor, 1–2 TB, resumable', go: '#inventory' },
+    tower:      { at: [TX, 11, 0],     box: [7, 22, 7],    title: 'The tower',        sub: 'Wissen · KPI frameworks and dashboards', go: '#tower' }
+  };
+  var fx = {}, hitList = [];
+  Object.keys(MACH).forEach(function (k) {
+    var d = MACH[k], m = new T.Mesh(new T.BoxGeometry(d.box[0], d.box[1], d.box[2]), new T.MeshBasicMaterial({ visible: false }));
+    m.position.set(d.at[0], d.at[1], d.at[2]); m.userData.k = k; scene.add(m); hitList.push(m); fx[k] = 0;
+  });
+  var shake = 0;
+  function react(k, soft) {
+    var s = soft ? .55 : 1;
+    fx[k] = Math.max(fx[k], s);
+    if (k === 'intake') fx.dish = Math.max(fx.dish, s * .6);
+    var d = MACH[k];
+    if (!reduce) ring(d.at[0], 0, d.at[2], (soft ? 4 : 7) + d.box[0] * .35, soft ? C.teal : C.accent);
+    if (!soft && k === 'redact' && !reduce) shake = 1;
+  }
+
+  // floating label, positioned over the machine
+  var tag = document.createElement('div'); tag.className = 'tag3d'; tag.setAttribute('role', 'status');
+  tag.innerHTML = '<b></b><span></span><a href="#">Go to the slide <i aria-hidden="true">→</i></a>';
+  document.body.appendChild(tag);
+  var tagB = tag.querySelector('b'), tagS = tag.querySelector('span'), tagA = tag.querySelector('a');
+  var tagK = null, tagPinned = 0, hoverK = null, v3 = new T.Vector3();
+  function showTag(k, pinned) {
+    var d = MACH[k]; tagK = k;
+    tagB.textContent = d.title; tagS.textContent = pinned ? d.sub : 'Click to see what it stands for'; tagA.setAttribute('href', d.go);
+    tag.classList.toggle('pinned', !!pinned); tag.classList.add('show');
+    if (pinned) tagPinned = performance.now() + 4200;
+  }
+  function placeTag() {
+    if (!tagK) return;
+    var d = MACH[tagK]; v3.set(d.at[0], d.at[1] + d.box[1] / 2 + 1, d.at[2]).project(camera);
+    var x = (v3.x * .5 + .5) * W, y = (-v3.y * .5 + .5) * H;
+    if (v3.z > 1 || x < 0 || x > W || y > H) { tag.classList.remove('show'); return; }
+    y = Math.max(y, 84 + tag.offsetHeight); x = clamp(x, 150, W - 150);
+    tag.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px) translate(-50%, -100%)';
+  }
+  function hideTag() { tag.classList.remove('show', 'pinned'); tagK = null; tagPinned = 0; }
+
+  var ray = new T.Raycaster(), ndc = new T.Vector2(), groundPlane = new T.Plane(new T.Vector3(0, 1, 0), 0), gp = new T.Vector3();
+  function blocked(el) { return !!(el && el.closest && el.closest('a, button, input, textarea, label, dialog, .nav, .panel, .role, .hero > *, .contact > *, .tag3d, .hold')); }
+  function pick(e) {
+    ndc.set(e.clientX / W * 2 - 1, -(e.clientY / H) * 2 + 1); ray.setFromCamera(ndc, camera);
+    var hit = ray.intersectObjects(hitList, false)[0];
+    return hit ? hit.object.userData.k : null;
+  }
+  window.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'touch') return;
+    var k = blocked(e.target) ? null : pick(e);
+    if (k !== hoverK) {
+      hoverK = k; document.documentElement.classList.toggle('poke', !!k);
+      if (k && (!tagPinned || tagK !== k)) showTag(k, false);
+      else if (!k && !tagPinned) hideTag();
+    }
+  }, { passive: true });
+  window.addEventListener('click', function (e) {
+    if (blocked(e.target) || document.querySelector('dialog[open]')) return;
+    var k = pick(e);
+    if (k) { react(k, false); showTag(k, true); return; }
+    // empty ground: a ripple, and the blocks nearby hop
+    if (ray.ray.intersectPlane(groundPlane, gp) && Math.abs(gp.x) < 200 && Math.abs(gp.z) < 120) {
+      if (!reduce) { ring(gp.x, 0, gp.z, 5, C.teal); hops.push([gp.x, gp.z, 0]); if (hops.length > 4) hops.shift(); }
+    }
+  });
+  tagA.addEventListener('click', function () { hideTag(); });
+
   /* ---------- camera stations + time of day ---------- */
   var KEYS = {
     hero:       { p: [2, 46, 128],   t: [10, -9, -6],   off: .16, sky: '#f2e6d2', sun: '#fff1d6', si: 1.0,  hi: .78, night: 0,   sp: [-40, 80, 50] },
@@ -327,6 +455,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 2));
     renderer.setSize(W, H, false);
     camera.aspect = W / H; camera.fov = mobile ? 52 : 30; camera.updateProjectionMatrix();
+    if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W, H); }
     measure();
   }
   function state() {
@@ -336,15 +465,34 @@
     var t = k === 0 ? 1 : clamp((mid - B.top) / (H * .75), 0, 1);
     if (window.scrollY + H >= document.documentElement.scrollHeight - 4) t = 1;
     if (reduce) t = t < .5 ? 0 : 1;
-    return { A: A.key, B: B.key, t: smooth(t) };
+    return { A: A.key, B: B.key, t: smooth(t), name: B.el.dataset.station };
   }
   var cA = new T.Color(), cB = new T.Color(), tmp = new T.Vector3(), tmp2 = new T.Vector3();
   function mixHex(a, b, t, out) { cA.set(a); cB.set(b); return out.copy(cA).lerp(cB, t); }
 
-  var last = performance.now();
+  var last = performance.now(), lastScroll = window.scrollY, vel = 0, roll = 0, arrived = null, booted = false;
+  var beltClock = 0, rainClock = 0, scanClock = 0, brainClock = 0, dishAng = 0;
+  // the station each slide's machine reacts for on arrival
+  var ARRIVE = { intake: 'intake', sort: 'sort', score: 'score', llm: 'llm', redact: 'redact', checkpoint: 'checkpoint', tower: 'tower' };
   function frame(now) {
     var dt = Math.min(.05, (now - last) / 1000); last = now;
     var time = now / 1000, S0 = state(), A = S0.A, B = S0.B, t = S0.t;
+
+    // scroll speed (screens per second), smoothed: it drives the belt, the dust and a slight bank
+    var dy = window.scrollY - lastScroll; lastScroll = window.scrollY;
+    vel += ((dt > 0 ? dy / H / dt : 0) - vel) * .12;
+    var rush = reduce ? 0 : Math.min(5, Math.abs(vel) * 2.5);
+    Object.keys(fx).forEach(function (k) { fx[k] = Math.max(0, fx[k] - dt * .75); });
+    if (!reduce) {
+      beltClock += dt * (1 + rush); rainClock += dt * (1 + rush + fx.intake * 3);
+      scanClock += dt * (1 + fx.score * 6); brainClock += dt * (1 + fx.llm * 5);
+    }
+    // arriving at a slide: its machine does a small beat
+    if (t > .97 && S0.name !== arrived) {
+      if (booted && ARRIVE[S0.name]) react(ARRIVE[S0.name], true);
+      arrived = S0.name;
+    }
+    booted = true;
 
     // camera: interpolate stations, lift in the middle of long moves, then ease toward it
     tmp.set(lerp(A.p[0], B.p[0], t), lerp(A.p[1], B.p[1], t), lerp(A.p[2], B.p[2], t));
@@ -354,7 +502,11 @@
     if (!reduce) { tmp.x += mouse.sx * 2.2; tmp.y += mouse.sy * 1.2; }
     var k = first || reduce ? 1 : 1 - Math.pow(.0016, dt);
     camPos.lerp(tmp, k); camTgt.lerp(tmp2, k); first = false;
-    camera.position.copy(camPos); camera.lookAt(camTgt);
+    camera.position.copy(camPos);
+    if (shake > 0) { camera.position.x += (Math.random() - .5) * shake * .5; camera.position.y += (Math.random() - .5) * shake * .5; shake = Math.max(0, shake - dt * 3); }
+    camera.lookAt(camTgt);
+    // bank into long flights, like a camera on a drone
+    if (!reduce) { roll += (clamp(vel, -3, 3) * -.012 - roll) * .06; camera.rotateZ(roll); }
     var off = lerp(A.off, B.off, t);
     if (mobile) camera.setViewOffset(W, H, 0, H * .14, W, H); else camera.setViewOffset(W, H, -W * off, 0, W, H);
 
@@ -364,33 +516,63 @@
     hemi.intensity = lerp(A.hi, B.hi, t);
     sun.position.set(lerp(A.sp[0], B.sp[0], t), lerp(A.sp[1], B.sp[1], t), lerp(A.sp[2], B.sp[2], t));
     var night = lerp(A.night, B.night, t);
-    nightMats.forEach(function (m) { m[0].emissiveIntensity = m[1] * night + (m[0] === lampMat ? .4 : 0); });
+    nightMats.forEach(function (m) { m[0].emissiveIntensity = m[1] * night + (m[0] === lampMat ? .4 + fx.review * 2 : 0); });
+    if (bloom) { bloom.strength = lerp(.15, .5, night); bloom.threshold = lerp(.93, .62, night); bloom.radius = lerp(.4, .5, night); }
+    // dust: drifts in the day, glows as fireflies at night, swirls when you scroll
+    var dp = dustPos, dt2 = reduce ? 0 : time;
+    for (var q = 0; q < DN; q++) {
+      var sd = dustSeed[q];
+      dp[q * 3] = sd[0] + Math.sin(dt2 * .2 * sd[4] + sd[3]) * 2.5;
+      dp[q * 3 + 1] = sd[1] + Math.sin(dt2 * .35 * sd[4] + sd[3] * 2) * 1.2 + Math.sin(sd[3] + rush) * rush * .25;
+      dp[q * 3 + 2] = sd[2] + Math.cos(dt2 * .17 * sd[4] + sd[3]) * 2.5;
+    }
+    dustGeo.attributes.position.needsUpdate = true;
+    dustMat.size = lerp(.38, .62, night); dustMat.opacity = lerp(.55, .95, night);
+    dustMat.color.setHex(night > .5 ? 0xffd27a : 0xfff2d2);
+    // rings
+    rings.forEach(function (r) {
+      if (!r.m.visible) return; r.age += dt;
+      var a = r.age / 1.4; if (a >= 1) { r.m.visible = false; return; }
+      r.m.scale.setScalar(.5 + r.max * (1 - Math.pow(1 - a, 3))); r.m.material.opacity = .75 * (1 - a);
+    });
+    for (var hq = hops.length - 1; hq >= 0; hq--) { hops[hq][2] += dt; if (hops[hq][2] > 2.5) hops.splice(hq, 1); }
+    // signs pop when their machine reacts
+    Object.keys(signBy).forEach(function (n) { var f = fx[n] || 0; signBy[n].scale.setScalar(1 + Math.sin(f * Math.PI) * .12); });
     starMat.opacity = smooth((night - .4) / .6);
-    towerLight.intensity = night * 2.2; deskLight.intensity = .4 + night * 1.6;
+    towerLight.intensity = night * 1.4; deskLight.intensity = .4 + night * 1.6;
     clouds.forEach(function (c) { c[1].emissiveIntensity = .15 - night * .12; });
 
     // machinery
     var tt = reduce ? 0 : time;
-    beltTex.offset.x = -(tt * SPEED / 1.6) % 1;
+    beltTex.offset.x = -(beltClock * SPEED / 1.6) % 1;
     var cyc = (tt % 1.6) / 1.6; pressDown = cyc < .12 ? cyc / .12 : cyc < .3 ? 1 : 1 - (cyc - .3) / .7;
+    if (fx.redact > .55) pressDown = 1;                       // poked: it slams and holds
     piston.position.y = 5.6 - pressDown * 2.6;
-    okMat.emissiveIntensity = cyc > .3 && cyc < .9 ? 1.4 : .35;
-    scanBar.position.y = 1.4 + (Math.sin(tt * 2.4) * .5 + .5) * 3.6;
-    brain.rotation.set(tt * .6, tt * .9, 0); brain.position.y = 3.2 + Math.sin(tt * 1.4) * .25;
-    brainMat.emissiveIntensity = .7 + Math.sin(tt * 3) * .25;
-    dish.rotation.y = Math.sin(tt * .35) * .9; beacon.material.emissiveIntensity = (tt % 1.2) < .3 ? 1.6 : .2;
-    flags.forEach(function (f, i) { f.rotation.y = Math.sin(tt * 2 + i) * .25; });
-    puffs.forEach(function (p, i) { var c = ((tt * .35 + i / puffs.length) % 1); p.position.y = 13 + c * 7; p.position.x = SX1 - 1.5 + c * 2.5; p.scale.setScalar(.6 + c * 1.6); p.material.opacity = .75 * (1 - c); });
+    okMat.emissiveIntensity = (cyc > .3 && cyc < .9 ? 1.4 : .35) + fx.redact * 3;
+    scanBar.position.y = 1.4 + (Math.sin(scanClock * 2.4) * .5 + .5) * 3.6;
+    scanGlow.material.opacity = .08 + fx.score * .4;
+    brain.rotation.set(brainClock * .6, brainClock * .9, 0); brain.position.y = 3.2 + Math.sin(tt * 1.4) * .25 + fx.llm * 1.2;
+    brainMat.emissiveIntensity = .7 + Math.sin(tt * 3) * .25 + fx.llm * 2.5;
+    dome.material.emissiveIntensity = .25 + fx.llm * 1.2;
+    dishAng += dt * fx.dish * 9;
+    dish.rotation.y = Math.sin(tt * .35) * .9 + dishAng; beacon.material.emissiveIntensity = (tt % 1.2) < .3 || fx.dish > .2 ? 1.6 + fx.dish * 3 : .2;
+    hop.scale.set(1 + Math.sin(fx.intake * Math.PI * 3) * .05 * fx.intake, 1, 1 + Math.sin(fx.intake * Math.PI * 3) * .05 * fx.intake);
+    flags.forEach(function (f, i) { f.rotation.y = Math.sin(tt * (2 + fx.checkpoint * 8) + i) * (.25 + fx.checkpoint * 1.1); });
+    puffs.forEach(function (p, i) { var c = ((tt * (.35 + fx.sort * .8) + i / puffs.length) % 1); p.position.y = 13 + c * 7; p.position.x = SX1 - 1.5 + c * 2.5; p.scale.setScalar((.6 + c * 1.6) * (1 + fx.sort)); p.material.opacity = .75 * (1 - c); });
+    var jump = fx.review > 0 ? Math.abs(Math.sin((1 - fx.review) * Math.PI * 3)) * fx.review * .9 : 0;
+    person.forEach(function (pp) { pp[0].position.y = pp[1] + jump; });
     clouds.forEach(function (c) { c[0].position.x += c[0].userData.v * dt * (reduce ? 0 : 1); if (c[0].position.x > 160) c[0].position.x = -160; });
     // the tower rises as the story nears its end
     var tsec = sections.filter(function (x) { return x.el.dataset.station === 'tower'; })[0];
     var towerT = tsec ? clamp((window.scrollY - tsec.top + H * .6) / (H * 1.3), 0, 1) : 1;
     var levels = Math.round(lerp(3, TL, smooth(towerT)));
-    tower.count = levels * TF * TF; towerTop.position.y = .5 + levels * 1.1 + .9;
-    towerTop.material.emissiveIntensity = .6 + night * 2;
-    updateItems(time);
+    tower.count = levels * TF * TF; towerTop.position.y = .5 + levels * 1.1 + .9 + Math.abs(Math.sin(fx.tower * Math.PI * 2)) * fx.tower * 2;
+    towerTop.material.emissiveIntensity = .6 + night * 2 + fx.tower * 3;
+    towerMat.emissiveIntensity = .14 * night + fx.tower * .5;
+    updateItems(beltClock, rainClock);
 
-    renderer.render(scene, camera);
+    if (tagK) { placeTag(); if (tagPinned && performance.now() > tagPinned && hoverK !== tagK) hideTag(); }
+    if (composer) composer.render(); else renderer.render(scene, camera);
     requestAnimationFrame(frame);
   }
 
