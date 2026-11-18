@@ -166,9 +166,11 @@
   function draw(now) {
     var y = window.scrollY, sc = S.scenes, i = 0;
     for (var k = 0; k < sc.length; k++) if (y >= sc[k].start) i = k;
-    var A = shots[i], sA = sc[i], local = y - sA.start, pA = Math.max(0, Math.min(1, local / sA.dur));
-    var t = 0, B = A, pB = 0;
-    if (i < sc.length - 1) { t = Math.max(0, Math.min(1, (local - (sA.dur - S.T())) / S.T())); B = shots[i + 1]; pB = 0; }
+    // the transition is centred on the boundary between scenes, like the text crossfade
+    var T = S.T(), cur = sc[i], local = y - cur.start, A = shots[i], B = A, t = 0, pA = Math.max(0, Math.min(1, local / cur.dur)), pB = 0;
+    if (i > 0 && local < T * .5) { A = shots[i - 1]; B = shots[i]; t = .5 + local / T; pA = 1; pB = 0; }
+    else if (i < sc.length - 1 && local > cur.dur - T * .5) { B = shots[i + 1]; t = (local - (cur.dur - T * .5)) / T; pB = 0; }
+    t = Math.max(0, Math.min(1, t));
     ms[0] += (mouse[0] - ms[0]) * 0.05; ms[1] += (mouse[1] - ms[1]) * 0.05;
     bind(0, A); bind(1, B);
     gl.uniform2f(U.uRes, canvas.width, canvas.height);

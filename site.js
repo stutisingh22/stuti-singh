@@ -37,28 +37,28 @@
     var spacer = document.createElement('div'); spacer.className = 'stage-spacer'; spacer.setAttribute('aria-hidden', 'true'); document.body.appendChild(spacer);
     var prog = document.createElement('i'); prog.className = 'fl fl--prog'; $('.frame').appendChild(prog);
     var DUR = function (el) {   // how long each scene holds, in screens
-      if (el.classList.contains('hero')) return 1.3;
-      if (el.classList.contains('night')) return 2.4;
-      if (el.classList.contains('chart')) return 1.6;
-      if (el.classList.contains('case--paper')) return 1.7;
-      if (el.classList.contains('case')) return 2.1;
-      if (el.classList.contains('signal')) return 1.5;
-      return 1.4;
+      if (el.classList.contains('hero')) return 1.0;
+      if (el.classList.contains('night')) return 1.5;
+      if (el.classList.contains('chart')) return 1.15;
+      if (el.classList.contains('case--paper')) return 1.25;
+      if (el.classList.contains('case')) return 1.45;
+      if (el.classList.contains('signal')) return 1.2;
+      return 1.1;
     };
     var foot = $('.foot'), sig = $('.signal'); if (foot && sig) sig.appendChild(foot);
     var scenes = $$('main > section').map(function (el, i) {
       // in reading order: the label first, then the headline, then the rest
       var reveals = el.classList.contains('hero') ? [] : $$('.reveal, .tagpill', el);
-      reveals.forEach(function (r, k) { r._at = Math.min(.36, .02 + k * .04); });
+      reveals.forEach(function (r, k) { r._at = Math.min(.2, k * .025); });
       return { el: el, i: i, reveals: reveals, base: DUR(el), imgs: $$('[data-dissolve] img, .case__bg', el) };
     });
     var H = 0, T = 0, total = 0;
     var layout = function () {
-      H = innerHeight; T = H * .32; var y = 0;
+      H = innerHeight; T = H * .2; var y = 0;
       scenes.forEach(function (s) {
         s.el.style.setProperty('--scrub', '0px');
         s.over = Math.max(0, s.el.scrollHeight - H);
-        s.dur = Math.max(s.base * H, s.over * 1.15 + 1.2 * H);
+        s.dur = Math.max(s.base * H, s.over * 1.5 + 1.0 * H);
         s.start = y; y += s.dur;
       });
       total = y; spacer.style.height = (total + H * .2) + 'px';
@@ -69,18 +69,18 @@
       var y = scrollY, cur = null;
       scenes.forEach(function (s, idx) {
         var local = y - s.start;
-        var inP = idx === 0 ? 1 : clamp(local / T, 0, 1);
-        var outP = idx === scenes.length - 1 ? 0 : clamp((local - (s.dur - T)) / T, 0, 1);
+        var inP = idx === 0 ? 1 : clamp(local / (T * .5), 0, 1);
+        var outP = idx === scenes.length - 1 ? 0 : clamp((local - (s.dur - T * .5)) / (T * .5), 0, 1);
         var vis = smooth(inP) * (1 - smooth(outP));
-        var p = clamp((local - T * .5) / (s.dur - T), 0, 1);
+        var p = clamp((local - T * .35) / (s.dur - T), 0, 1);
         s.el._p = p; s.el._vis = vis;
         var st = s.el.style;
         st.setProperty('--vis', vis.toFixed(3)); st.setProperty('--in', smooth(inP).toFixed(3)); st.setProperty('--out', smooth(outP).toFixed(3));
         st.visibility = vis > .002 ? 'visible' : 'hidden';
         s.el.classList.toggle('live', vis > .55);
-        if (s.over) st.setProperty('--scrub', (-s.over * smooth(clamp((p - .08) / .8, 0, 1))).toFixed(1) + 'px');
+        if (s.over) st.setProperty('--scrub', (-s.over * clamp((p - .22) / .72, 0, 1)).toFixed(1) + 'px');
         // text arrives line by line, and leaves as one
-        s.reveals.forEach(function (r) { r.classList.toggle('on', p >= r._at && outP < .5); });
+        s.reveals.forEach(function (r) { r.classList.toggle('on', inP > .35 && p >= r._at && outP < .6); });
         // paintings: grow out of halftone dots on the way in, dissolve back on the way out
         s.imgs.forEach(function (img) {
           var max = img.classList.contains('case__bg') ? 2.6 : img.closest('.record') ? 3.4 : 6;
@@ -101,21 +101,36 @@
     addEventListener('scroll', req, { passive: true });
     window.__stage = { scenes: scenes, T: function () { return T; } };
     /* inertial scrolling: the wheel sets a target, the page glides to it */
-    var target = scrollY, glide = false, ours = false;
+    var target = scrollY, glide = false, ours = false, lastDir = 1;
     var maxY = function () { return document.documentElement.scrollHeight - innerHeight; };
     var step = function () {
       var d = target - scrollY;
-      if (Math.abs(d) < .6) { ours = true; scrollTo(0, target); glide = false; return; }
-      ours = true; scrollTo(0, scrollY + d * .085);
+      if (Math.abs(d) < .6) {
+        ours = true; scrollTo({ top: target, behavior: 'instant' }); glide = false;
+        // never come to rest in the middle of a scene change: settle into the scene you were heading for
+        for (var q = 1; q < scenes.length; q++) {
+          var b = scenes[q].start;
+          if (Math.abs(target - b) < T * .5) { target = lastDir >= 0 ? b + T * .55 : b - T * .55; glide = true; requestAnimationFrame(step); break; }
+        }
+        return;
+      }
+      ours = true; scrollTo({ top: scrollY + d * .12, behavior: 'instant' });
       requestAnimationFrame(step);
     };
     addEventListener('wheel', function (e) {
       if (e.ctrlKey || e.defaultPrevented) return;
       var t = e.target;
-      if (t.closest && t.closest('textarea, .zoom, dialog, .sheet, pre')) return;
+      if (t.closest && t.closest('.zoom, dialog')) return;
+      for (var n = t; n && n !== document.body && n.nodeType === 1; n = n.parentElement) {
+        var oy = getComputedStyle(n).overflowY;
+        if ((oy === 'auto' || oy === 'scroll' || n.tagName === 'TEXTAREA') && n.scrollHeight > n.clientHeight + 2) {
+          if ((e.deltaY > 0 && n.scrollTop + n.clientHeight < n.scrollHeight - 1) || (e.deltaY < 0 && n.scrollTop > 0)) return;
+        }
+      }
       e.preventDefault();
       var dy = e.deltaY * (e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? innerHeight : 1);
-      target = clamp((glide ? target : scrollY) + dy * 1.15, 0, maxY());
+      lastDir = dy;
+      target = clamp((glide ? target : scrollY) + dy, 0, maxY());
       if (!glide) { glide = true; requestAnimationFrame(step); }
     }, { passive: false });
     addEventListener('scroll', function () { if (ours) { ours = false; return; } if (!glide) target = scrollY; }, { passive: true });
@@ -263,7 +278,7 @@
     var STAGES = ['fetch', 'extract', 'rules', 'LLM', 'enrich'];
     var TIERS = [['A', '#3fb8a5', .14], ['B', '#7fd1c4', .24], ['C', '#c9bfae', .3], ['Review', '#e7a43a', .14], ['Reject', '#8a8173', .18]];
     var cum = [], acc = 0; TIERS.forEach(function (tt) { acc += tt[2]; cum.push(acc); });
-    for (var pi = 0; pi < PN; pi++) { var h = hash(pi, 21), tier = 0; while (h > cum[tier]) tier++; P.push({ d: hash(pi, 22) * .55, lane: hash(pi, 23), tier: tier, llm: hash(pi, 24) < .3 }); }
+    for (var pi = 0; pi < PN; pi++) { var h = hash(pi, 21), tier = 0; while (h > cum[tier]) tier++; P.push({ d: hash(pi, 22) * 1.8, lane: hash(pi, 23), tier: tier, llm: hash(pi, 24) < .3 }); }
     var pipeDraw = function (g, W, H, t) {
       if (!t0) t0 = t;
       var el = reduce ? 99 : t - t0, gx = [.12, .3, .48, .64, .8].map(function (f) { return f * W; }), top = 34, bot = H - 64;
@@ -276,7 +291,7 @@
       var binW = W / TIERS.length, done = 0, rules = 0, llm = 0, fill = TIERS.map(function () { return 0; }), base = H - 26;
       g.globalAlpha = .9;
       for (var i = 0; i < PN; i++) {
-        var p = P[i], u = el * .2 - p.d, y;
+        var p = P[i], u = el * .34 - p.d, y;
         if (u <= 0) continue;
         if (u < 1) {   // in flight through the stages
           var x = lerp(0, W * .94, u); y = top + p.lane * (bot - top - 70) + 20;
