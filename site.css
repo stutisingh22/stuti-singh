@@ -308,3 +308,17 @@ html.stage .reveal.on, html.stage main > section:not(.hero) .tagpill.on { opacit
 .fl--prog { top: var(--band); left: 0; right: 0; height: 1px; background: rgba(255,250,234,.95); transform-origin: left center; transform: scaleX(0); }
 /* the footer closes the last scene */
 html.stage .signal .foot { position: absolute; left: 45%; right: 0; bottom: 0; z-index: 3; background: linear-gradient(0deg, rgba(8,20,40,.7), transparent); border-top: 0; }
+
+
+/* =====================================================================
+   THE FILM (film.js, desktop): WebGL draws the paintings and grounds,
+   so the scenes' own backgrounds and images step aside.
+   ===================================================================== */
+.film { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display: block; }
+html.gl main > section { background: transparent !important; background-image: none !important; }
+html.gl .hero__art, html.gl .chart__art, html.gl .record__art, html.gl .signal__art, html.gl .case__bg { display: none !important; }
+html.gl .chart::after { background: linear-gradient(90deg, rgba(8,24,46,.9) 0%, rgba(8,24,46,.7) 36%, rgba(8,24,46,0) 62%); }
+html.gl .hero::after { background: linear-gradient(90deg, rgba(10,9,8,.78) 0%, rgba(10,9,8,.5) 34%, rgba(10,9,8,0) 60%), linear-gradient(0deg, rgba(10,9,8,.7) 0%, rgba(10,9,8,0) 34%); }
+html.gl body { background: #0b0a09; }
+html.gl .signal .signal__in { grid-column: 2; }
+html.gl .signal .constel { left: 46%; width: 54%; }

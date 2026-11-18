@@ -99,6 +99,26 @@
     };
     var req = function () { if (!ticking) { ticking = true; requestAnimationFrame(frame); } };
     addEventListener('scroll', req, { passive: true });
+    window.__stage = { scenes: scenes, T: function () { return T; } };
+    /* inertial scrolling: the wheel sets a target, the page glides to it */
+    var target = scrollY, glide = false, ours = false;
+    var maxY = function () { return document.documentElement.scrollHeight - innerHeight; };
+    var step = function () {
+      var d = target - scrollY;
+      if (Math.abs(d) < .6) { ours = true; scrollTo(0, target); glide = false; return; }
+      ours = true; scrollTo(0, scrollY + d * .085);
+      requestAnimationFrame(step);
+    };
+    addEventListener('wheel', function (e) {
+      if (e.ctrlKey || e.defaultPrevented) return;
+      var t = e.target;
+      if (t.closest && t.closest('textarea, .zoom, dialog, .sheet, pre')) return;
+      e.preventDefault();
+      var dy = e.deltaY * (e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? innerHeight : 1);
+      target = clamp((glide ? target : scrollY) + dy * 1.15, 0, maxY());
+      if (!glide) { glide = true; requestAnimationFrame(step); }
+    }, { passive: false });
+    addEventListener('scroll', function () { if (ours) { ours = false; return; } if (!glide) target = scrollY; }, { passive: true });
     addEventListener('resize', function () { clearTimeout(layout._t); layout._t = setTimeout(layout, 150); });
     addEventListener('load', layout);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
