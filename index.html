@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stuti Singh — A walk through Rome</title>
+  <meta name="description" content="Portfolio of Stuti Singh, data analyst and AI & automation engineer, told as a walk through Rome.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- THE WORLD: engine.js fills this. Nothing with a background ever covers it. -->
+  <main id="world" aria-label="A walk through Rome. Drag or use ← → to look around, ↑ to walk, and Tab to reach the markers."></main>
+
+  <header class="topbar">
+    <a id="brand" class="pill brand" href="#" data-ui-text>Stuti Singh</a>
+    <nav class="pill-group" aria-label="Site">
+      <button id="btn-map" class="pill" aria-expanded="false" data-ui-text>Map</button>
+      <button id="btn-journal" class="pill" data-ui-text>Journal</button>
+      <button id="btn-resume" class="pill" data-ui-text>Résumé</button>
+      <a id="btn-github" class="pill" target="_blank" rel="noopener" data-ui-text>GitHub</a>
+    </nav>
+  </header>
+
+  <!-- One sentence, in one seat. It stays while the street changes. -->
+  <div id="label" class="label" data-ui-text aria-live="polite">
+    <div class="stack"><strong class="a"></strong><strong class="b"></strong></div>
+    <div class="stack"><span class="a"></span><span class="b"></span></div>
+  </div>
+
+  <button id="guide" class="guide" type="button" hidden>
+    <img alt="" draggable="false">
+    <svg class="arm" viewBox="0 0 36 20" aria-hidden="true"><path d="M1 10 H24 M16 3 L27 10 L16 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span></span>
+  </button>
+
+  <div id="card-root"></div>
+
+  <!-- Opening: the city is already alive behind this, softly blurred -->
+  <section id="intro" class="intro" aria-labelledby="intro-title">
+    <p class="intro-kicker">A walk through Rome</p>
+    <h1 id="intro-title">Stuti Singh</h1>
+    <p class="intro-role">Data analyst · AI &amp; automation engineer</p>
+    <button id="intro-begin" class="intro-begin">Begin the walk</button>
+    <p class="intro-help">Scroll to walk from one place into the next. Drag to look around.</p>
+    <button id="intro-resume" class="intro-link">Or read the résumé</button>
+  </section>
+
+  <footer class="hud">
+    <div class="pill-group">
+      <button id="hold-l" class="pill round" aria-label="Walk back">◀</button>
+      <button id="hold-r" class="pill round" aria-label="Walk on">▶</button>
+    </div>
+    <p id="hint" class="hint" data-ui-text></p>
+    <div class="pill-group">
+      <button id="btn-passport" class="pill stamps" data-ui-text><span id="stamp-dots" class="dots" aria-hidden="true"></span><span id="stamp-count">0/12</span></button>
+      <button id="btn-sound" class="pill" aria-pressed="false" data-ui-text>Sound off</button>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" data-ui-text></div>
+
+  <aside id="minimap" class="minimap" hidden aria-label="Map of the walk">
+    <div class="map-head"><strong>Rome</strong><button id="map-close" class="x" aria-label="Close map">×</button></div>
+    <div class="map-area"><svg id="map-svg" viewBox="0 0 300 220" aria-hidden="true"></svg><div id="map-pins"></div><i id="map-you" aria-hidden="true"></i></div>
+  </aside>
+
+  <aside id="journal" class="drawer" aria-hidden="true" aria-label="Journal">
+    <div class="drawer-head"><strong>Journal</strong><button id="journal-close" class="x" aria-label="Close journal">×</button></div>
+    <div id="journal-tabs" class="tabs" role="tablist"></div>
+    <div id="journal-body" class="drawer-body"></div>
+  </aside>
+
+  <div id="passport" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="passport-title">
+    <div class="modal-box">
+      <button id="passport-close" class="x" aria-label="Close passport">×</button>
+      <h2 id="passport-title">Your passport</h2>
+      <p id="passport-note"></p>
+      <ul id="passport-grid" class="passport-grid"></ul>
+      <div class="modal-actions"><button id="passport-again" class="mini">Walk again from the gate</button><button id="passport-resume" class="mini">Open the résumé</button></div>
+    </div>
+  </div>
+
+  <section id="resume" class="resume" hidden aria-label="Résumé">
+    <div class="resume-bar"><button id="resume-back" class="mini">Back to the walk</button><button id="resume-print" class="mini">Print</button></div>
+    <div id="resume-body" class="resume-body"></div>
+  </section>
+
+  <noscript><p class="noscript">This portfolio is an interactive walk and needs JavaScript. The résumé is at <a href="assets/StutiSingh_Resume_DA.pdf">assets/StutiSingh_Resume_DA.pdf</a>.</p></noscript>
+
+  <!-- Load order matters: data → art → engine → ui → main -->
+  <script src="js/data.js"></script>
+  <script src="js/assets.js"></script>
+  <script src="vendor/three.min.js"></script>
+  <script src="js/streetview.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

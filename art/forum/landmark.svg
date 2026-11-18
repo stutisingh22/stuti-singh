@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720">
+  <path d="M120 250 H840 L800 210 H160 Z" fill="#c45132"/>
+  <rect x="150" y="250" width="660" height="28" fill="#e4cba8"/>
+  <rect x="220" y="278" width="46" height="300" fill="#e4cba8"/><rect x="210" y="268" width="66" height="22" fill="#c9a67a"/><rect x="212" y="560" width="62" height="18" fill="#8d6848"/><rect x="370" y="278" width="46" height="300" fill="#e4cba8"/><rect x="360" y="268" width="66" height="22" fill="#c9a67a"/><rect x="362" y="560" width="62" height="18" fill="#8d6848"/><rect x="520" y="278" width="46" height="300" fill="#e4cba8"/><rect x="510" y="268" width="66" height="22" fill="#c9a67a"/><rect x="512" y="560" width="62" height="18" fill="#8d6848"/><rect x="670" y="278" width="46" height="300" fill="#e4cba8"/><rect x="660" y="268" width="66" height="22" fill="#c9a67a"/><rect x="662" y="560" width="62" height="18" fill="#8d6848"/>
+  <rect x="140" y="578" width="680" height="28" fill="#c9a67a"/>
+  <rect x="720" y="300" width="10" height="180" fill="#2c241e"/>
+  <path d="M700 300 h50 l-25 40 Z" fill="#e2b15a"/>
+</svg>

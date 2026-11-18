@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="640" viewBox="0 0 1100 640">
+  <path d="M70 280 Q150 120 230 280 Z" fill="#c45132"/>
+      <rect x="100" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="184" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="90" y="400" width="120" height="16" fill="#e4cba8"/><path d="M270 280 Q350 120 430 280 Z" fill="#e2b15a"/>
+      <rect x="300" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="384" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="290" y="400" width="120" height="16" fill="#e4cba8"/><path d="M470 280 Q550 120 630 280 Z" fill="#234038"/>
+      <rect x="500" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="584" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="490" y="400" width="120" height="16" fill="#e4cba8"/><path d="M670 280 Q750 120 830 280 Z" fill="#3d4f73"/>
+      <rect x="700" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="784" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="690" y="400" width="120" height="16" fill="#e4cba8"/><path d="M870 280 Q950 120 1030 280 Z" fill="#9c3d45"/>
+      <rect x="900" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="984" y="280" width="16" height="220" fill="#8d6848"/>
+      <rect x="890" y="400" width="120" height="16" fill="#e4cba8"/>
+</svg>

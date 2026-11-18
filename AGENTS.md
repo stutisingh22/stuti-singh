@@ -1,0 +1,19 @@
+
+# Rome walk: rules for this repo
+
+This is a WORKING first-person street-view walk built on three.js. Extend it; never rebuild it.
+
+## Never
+- Never rewrite, replace, or "simplify" `js/streetview.js`. Never turn the walk into a slideshow, side-scroller, carousel, or scrolling page.
+- Never add a panel or section with a background that covers the view. Long text goes only in the journal drawer or résumé view.
+- Never hand-edit `js/assets.js`. Art enters only via `python3 scripts/prepare-art.py`.
+- Never add frameworks, bundlers, or a build step. Never remove `data-ui-text` attributes or `window.__rome`.
+- Never edit or delete a test to make it pass.
+
+## Always
+- Put all copy and route changes in `js/data.js` (`STOPS`, `STREETS`, `VIEWS`).
+- Serve with `npm run serve`. Panoramas do not load from file://.
+- After ANY change, run `npm test` and paste the summary line ("12 passed").
+- If the walk looks static on a Mac, that's the Reduce Motion setting. Test with `?motion=full`, and do not remove the reduced-motion mode.
+
+See CURSOR_GUIDE.md and PANORAMA_PROMPTS.md.

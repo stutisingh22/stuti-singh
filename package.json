@@ -1,0 +1,14 @@
+{
+  "name": "rome-walk-portfolio",
+  "private": true,
+  "description": "Stuti Singh's portfolio as a dreamy first-person walk through Rome",
+  "scripts": {
+    "serve": "npx --yes http-server -p 8765 -c-1 .",
+    "check:copy": "node scripts/check-copy.js",
+    "test": "node scripts/check-copy.js && playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0"
+  }
+}
