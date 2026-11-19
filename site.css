@@ -334,3 +334,80 @@ html.gl .glass { background: rgba(14,16,26,.82); }
 html.gl .case--blue .glass, html.gl #crm .glass { background: rgba(8,28,54,.84); }
 html.gl .node { background: rgba(8,34,66,.6); }
 html.gl .pol__grid i { box-shadow: none; }
+
+/* =====================================================================
+   PHONES & SMALL TABLETS: the same story as one calm column. No frame lines
+   across the text, a header that steps aside while you read, honest gutters.
+   ===================================================================== */
+@media (max-width: 960px) {
+  :root { --g: clamp(22px, 6.5vw, 64px); }
+  .frame { display: none; }
+  /* header: a soft dark fade so nothing reads underneath it; hides on the way down */
+  .top { height: 60px; padding: 0 14px 0 0; background: linear-gradient(180deg, rgba(8,8,7,.82) 0%, rgba(8,8,7,.5) 60%, rgba(8,8,7,0) 100%); transition: transform .45s var(--ease); }
+  .top.away { transform: translateY(-100%); }
+  .mark { width: 60px; }
+  .mark svg { width: 22px; height: 22px; }
+  .top .pill { padding: 7px 7px 7px 12px; font-size: .62rem; gap: 10px; }
+  .top .pill .arr { width: 18px; height: 18px; }
+  .m-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--gold); transform-origin: left; transform: scaleX(var(--mp, 0)); opacity: .8; }
+
+  /* hero: painting on top, words below it, all in flow so nothing collides */
+  .hero { height: auto; min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 var(--g) 40px; }
+  .hero__art img { object-position: 64% 22%; }
+  .hero::after { background: linear-gradient(0deg, rgba(10,9,8,.97) 0%, rgba(10,9,8,.9) 46%, rgba(10,9,8,.35) 72%, rgba(10,9,8,.05) 100%); }
+  .hero__in, .hero__band { position: relative; inset: auto; left: auto; right: auto; top: auto; bottom: auto; max-width: none; }
+  .hero__in { padding-top: 34svh; }
+  .hero h1 { font-size: clamp(3.3rem, 15vw, 5rem); margin-bottom: 14px; }
+  .hero__sub { font-size: 1.22rem; margin-bottom: 24px; }
+  .hero__band { display: block; margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,250,234,.16); }
+  .hero__band .tagpill { margin-bottom: 10px; }
+  .hero__band p:last-child { font-size: .93rem; line-height: 1.55; color: rgba(255,250,234,.8); }
+
+  /* chapters: one gutter, content-sized, no empty screens */
+  .night, .chart, .signal { min-height: 0; }
+  .night__in, .chart__in, .record__in, .instruments__in, .signal__in { padding: 16vh var(--g) 12vh; }
+  .stack { font-size: clamp(2.3rem, 10.5vw, 3.6rem); margin-bottom: 6vh; }
+  .proof dt { font-size: 2.3rem; }
+  .proof div { padding: 18px 14px 18px 0; }
+  .proof div + div { padding-left: 14px; }
+  .proof div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .proof div:nth-child(n+3) { border-top: 1px solid rgba(255,250,234,.16); }
+
+  /* the chart: words first, then the map itself, tilted, bleeding off the edge */
+  .chart { display: flex; flex-direction: column; padding-bottom: 12vh; }
+  .chart::after { background: linear-gradient(180deg, var(--blue) 0%, rgba(13,58,104,.6) 55%, rgba(13,58,104,0) 100%); }
+  .chart__in { order: 0; padding-bottom: 6vh; }
+  .chart h2 { font-size: clamp(2.7rem, 12vw, 4rem); }
+  .chart__in > p:last-child { font-size: 1.12rem; }
+  .chart__art { order: 1; position: relative; right: auto; top: auto; width: 118vw; margin-left: -4vw; opacity: 1; transform: rotate(var(--rot, -4deg)); box-shadow: 0 30px 60px -20px rgba(0,0,0,.5); }
+
+  /* the work: each case is a page of its own */
+  .case { min-height: 0; gap: 34px; padding: 14vh var(--g) 12vh; }
+  .case__bg { opacity: .1; }
+  .case h3 { font-size: clamp(2rem, 9vw, 2.8rem); }
+  .nums div { min-width: 0; flex: 1 1 30%; padding: 12px 10px 12px 0; }
+  .nums div + div { padding-left: 10px; }
+  .nums dt { font-size: 1.6rem; }
+  .pts li { font-size: .95rem; }
+  .glass { padding: 16px; border-radius: 14px; }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: .74rem; padding: 14px; }
+  .sheet { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .sheet table { min-width: 520px; }
+  .pipe { height: 280px; }
+  .pol__grid { gap: 7px; }
+  .w2 { width: 78%; margin-top: -12%; }
+
+  /* the record and the rest */
+  .record__art { width: 110vw; right: -40vw; top: 0; opacity: .12; }
+  .record h2, .instruments h2 { font-size: clamp(2.7rem, 12vw, 4rem); margin-bottom: 6vh; }
+  .orbit { padding-left: 26px; }
+  .orbit li { padding-bottom: 38px; }
+  .orbit li::before { left: -33px; }
+  .orbit h3 { font-size: 1.85rem; }
+  .instruments h2 { margin-bottom: 4vh; }
+  .signal__art { opacity: .28; }
+  .signal h2 { font-size: clamp(2.5rem, 11vw, 3.6rem); }
+  .signal__in > p:not(.tagpill) { font-size: 1.12rem; }
+  .node { padding: 14px 16px 14px 38px; }
+  .foot { padding: 26px var(--g) 34px; }
+}

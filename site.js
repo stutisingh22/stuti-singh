@@ -177,9 +177,16 @@
     } else reveals.forEach(function (el) { el.classList.add('in'); });
     setTimeout(function () { reveals.forEach(function (el) { if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in'); }); }, 2500);
     var dissolveImgs = $$('.record__art img, .signal__art img'), chapters = $$('[data-chapter]');
+    // the header steps aside while you read down, and comes back the moment you scroll up
+    var top = $('.top'), mp = document.createElement('i'), lastY = scrollY;
+    mp.className = 'm-prog'; mp.setAttribute('aria-hidden', 'true'); if (top) top.appendChild(mp);
     var onScroll = function () {
       ticking = false;
       var H = innerHeight, y = scrollY;
+      if (top) {
+        if (Math.abs(y - lastY) > 6) { top.classList.toggle('away', y > lastY && y > H * .6); lastY = y; }
+        top.style.setProperty('--mp', clamp(y / Math.max(1, document.documentElement.scrollHeight - H), 0, 1).toFixed(4));
+      }
       if (!reduce) {
         var out = clamp(y / (H * .9), 0, 1);
         setR(heroImg, lerp(6, 1.1, out * out)); heroImg.style.setProperty('--s', (1.04 + out * .08).toFixed(3));
