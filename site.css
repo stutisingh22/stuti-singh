@@ -326,7 +326,7 @@ html.gl .signal .constel { left: 46%; width: 54%; }
 html.stage { scroll-behavior: auto; }   /* the glide drives the scroll; CSS smoothing would fight it */
 
 /* scrubbed, not timed */
-html.stage .reveal, html.stage main > section:not(.hero) .tagpill { transition: none !important; will-change: opacity, transform; }
+html.stage .reveal, html.stage main > section:not(.hero) .tagpill { transition: none !important; will-change: opacity, transform; filter: none; }
 
 /* over the moving film, a live backdrop blur is re-computed every frame: use a solid tint instead */
 html.gl .glass, html.gl .node, html.gl .tagpill, html.gl .pill--ghost, html.gl .pill--dark { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }

@@ -37,20 +37,21 @@
     var spacer = document.createElement('div'); spacer.className = 'stage-spacer'; spacer.setAttribute('aria-hidden', 'true'); document.body.appendChild(spacer);
     var prog = document.createElement('i'); prog.className = 'fl fl--prog'; $('.frame').appendChild(prog);
     var DUR = function (el) {   // how long each scene holds, in screens
-      if (el.classList.contains('hero')) return 1.5;
-      if (el.classList.contains('night')) return 2.4;
-      if (el.classList.contains('chart')) return 1.9;
-      if (el.classList.contains('case--paper')) return 2.1;
-      if (el.classList.contains('case')) return 2.4;
-      if (el.classList.contains('signal')) return 1.8;
-      return 1.7;
+      if (el.classList.contains('hero')) return 1.2;
+      if (el.classList.contains('night')) return 1.8;
+      if (el.classList.contains('chart')) return 1.45;
+      if (el.classList.contains('case--paper')) return 1.6;
+      if (el.classList.contains('case')) return 1.8;
+      if (el.classList.contains('signal')) return 1.4;
+      return 1.3;
     };
     var foot = $('.foot'), sig = $('.signal'); if (foot && sig) sig.appendChild(foot);
     var scenes = $$('main > section').map(function (el, i) {
       // in reading order: the label first, then the headline, then the rest
       var reveals = el.classList.contains('hero') ? [] : $$('.reveal, .tagpill', el);
-      reveals.forEach(function (r, k) { r._at = Math.min(.2, k * .025); r._head = /^H[1-3]$/.test(r.tagName) || !!r.querySelector('h2, h3'); });
-      return { el: el, i: i, reveals: reveals, base: DUR(el), imgs: $$('[data-dissolve] img, .case__bg', el) };
+      var kh = -1;
+      reveals.forEach(function (r, k) { r._at = Math.min(.2, k * .025); r._head = /^H[1-3]$/.test(r.tagName); if (r._head && kh < 0) kh = k; });
+      return { el: el, i: i, reveals: reveals, kh: Math.max(0, kh), base: DUR(el), imgs: $$('[data-dissolve] img, .case__bg', el) };
     });
     var H = 0, T = 0, total = 0;
     var layout = function () {
@@ -58,7 +59,7 @@
       scenes.forEach(function (s) {
         s.el.style.setProperty('--scrub', '0px');
         s.over = Math.max(0, s.el.scrollHeight - H);
-        s.dur = Math.max(s.base * H, s.over * 1.5 + 1.0 * H);
+        s.dur = Math.max(s.base * H, s.over * 1.25 + .85 * H);
         s.start = y; y += s.dur;
       });
       total = y; spacer.style.height = (total + H * .2) + 'px';
@@ -81,7 +82,7 @@
         if (s.over) st.setProperty('--scrub', (-s.over * clamp((p - .22) / .72, 0, 1)).toFixed(1) + 'px');
         // text arrives line by line, and leaves as one
         if (vis > 0) s.reveals.forEach(function (r, k) {
-          var e = idx === 0 ? 1 : smooth(clamp((local - k * H * .05) / (H * .34), 0, 1)), o = smooth(outP), a = e * (1 - o), rs = r.style;
+          var e = idx === 0 ? 1 : smooth(clamp((local + T * .15 - k * H * .035) / (H * .22), 0, 1)), o = smooth(outP), a = e * (1 - o), rs = r.style;
           rs.opacity = a.toFixed(3);
           rs.transform = 'translate3d(0,' + ((1 - e) * 30 - o * 22).toFixed(1) + 'px,0)';
           if (r._head) { var b = (1 - e) * 10 + o * 8; rs.filter = b > .15 ? 'blur(' + b.toFixed(1) + 'px)' : 'none'; }
@@ -106,10 +107,12 @@
     addEventListener('scroll', req, { passive: true });
     window.__stage = { scenes: scenes, T: function () { return T; } };
     /* inertial scrolling: the wheel sets a target, the page glides to it */
-    var target = scrollY, glide = false, ours = false, lastDir = 1;
+    var target = scrollY, glide = false, ours = false, lastDir = 1, lastWheel = 0;
     var maxY = function () { return document.documentElement.scrollHeight - innerHeight; };
     var step = function () {
       var d = target - scrollY;
+      // as the glide runs out, bend its landing point to where a headline is whole
+      if (!step._chk && Math.abs(d) < H * .06 && performance.now() - lastWheel > 90) { step._chk = true; var n = settleTo(target); if (n !== null) { target = n; d = target - scrollY; } }
       if (Math.abs(d) < .6) {
         ours = true; scrollTo({ top: target, behavior: 'instant' }); glide = false;
         return;
@@ -117,7 +120,25 @@
       ours = true; scrollTo({ top: scrollY + d * .09, behavior: 'instant' });
       requestAnimationFrame(step);
     };
+    // where a scene's headline has fully formed, and where it starts to leave
+    var readyAt = function (s) { return s.i === 0 ? s.start : s.start - T * .15 + s.kh * H * .035 + H * .22 + 2; };
+    var leaveAt = function (s) { return s.start + s.dur - T * .5 - 2; };
+    // if the reader stops mid-change, ease to the nearer point where a headline is whole
+    // going back against the reader's direction costs more than carrying on
+    var cost = function (m) { return Math.abs(m) * (m * lastDir < 0 ? 1.8 : 1); };
+    var settleTo = function (y) {
+      var best = null;
+      for (var i = 0; i < scenes.length; i++) {
+        var s = scenes[i], a = readyAt(s), b = Math.max(a, leaveAt(s));
+        if (y >= a && y <= b) return null;                  // already readable
+        var c = y < a ? a : b;
+        if (best === null || cost(c - y) < cost(best - y)) best = c;
+      }
+      if (best === null || Math.abs(best - y) > H * .45) return null;
+      return clamp(best, 0, maxY());
+    };
     addEventListener('wheel', function (e) {
+      step._chk = false; lastWheel = performance.now();
       if (e.ctrlKey || e.defaultPrevented) return;
       var t = e.target;
       if (t.closest && t.closest('.zoom, dialog')) return;
@@ -130,7 +151,7 @@
       e.preventDefault();
       var dy = e.deltaY * (e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? innerHeight : 1);
       lastDir = dy;
-      target = clamp((glide ? target : scrollY) + dy * .62, 0, maxY());
+      target = clamp((glide ? target : scrollY) + dy * .78, 0, maxY());
       if (!glide) { glide = true; requestAnimationFrame(step); }
     }, { passive: false });
     addEventListener('scroll', function () { if (ours) { ours = false; return; } if (!glide) target = scrollY; }, { passive: true });
